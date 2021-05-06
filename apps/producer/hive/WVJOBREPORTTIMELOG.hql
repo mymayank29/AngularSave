@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS ${DESTINATION_DB}.WVJOBREPORTTIMELOG;
+CREATE TABLE ${DESTINATION_DB}.WVJOBREPORTTIMELOG
+STORED AS parquet
+LOCATION "${LOCATION_PATH}/WVJOBREPORTTIMELOG"
+AS
+ SELECT
+ concat(p.code1, ", ", p.code2, ", ", from_unixtime(cast(to_utc_timestamp(p.dttmstartactual,'CST') as bigint), "dd/MM/yyyy HH:mm")) as phase,
+ t.*
+ FROM ${SOURCE_DB}.WVJOBREPORTTIMELOG t
+ left join ${SOURCE_DB}.WVJOBPROGRAMPHASE p on t.idrecjobprogramphasecalc = p.idrec;
+
+ALTER TABLE ${DESTINATION_DB}.WVJOBREPORTTIMELOG SET TBLPROPERTIES('EXTERNAL'='TRUE');

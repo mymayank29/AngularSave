@@ -1,0 +1,40 @@
+<mat-toolbar class="header">
+ <a  routerLink="/">
+  <img alt="Chevron" src="assets/images/hallmark_blue.png" width="45" height="50">
+</a>
+<!-- <span>AI Spend Auditor</span> -->
+<!-- <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-button">
+    <mat-icon svgIcon="nav" class="menu-icon"></mat-icon>
+  </button> -->
+ 
+  <a routerLink="/" class="title-flex">
+    <!-- <span class="title">AI</span> -->
+    <p class="subtitle">
+      <span>SAVE</span>
+      <!-- <span>auditor</span> -->
+    </p>
+  </a>
+  <span class="spacer"></span>
+   <!-- <mat-menu #menu="matMenu">
+    <a mat-menu-item *ngFor="let item of menuList" [id]="item.link" [routerLink]="'/'+item.link" routerLinkActive="active">
+      {{item.name}}
+    </a>
+  </mat-menu> -->
+<nav mat-tab-nav-bar disableRipple>
+  <a mat-tab-link *ngFor="let item of menuList" [id]="item.link" [routerLink]="'/'+item.link" routerLinkActive #rla="routerLinkActive"
+  [active]="rla .isActive">
+  {{item.name}}
+  </a>
+  <!-- <a  mat-tab-link *ngIf="authService.isLoggedIn" routerLink="/login" [active]="authService.isLoggedIn">Log Out</a> -->
+  <!-- <a  mat-tab-link *ngIf="!authService.isLoggedIn" routerLink="/login" [active]="!authService.isLoggedIn"  >Log In</a> -->
+</nav>
+    <!-- <a mat-raised-button *ngFor="let item of menuList" [id]="item.link" [routerLink]="'/'+item.link" routerLinkActive="active">
+      {{item.name}}
+    </a> -->
+    <!-- <a mat-raised-button *ngIf="authService.isLoggedIn" routerLink="/login">Log Out</a>
+    <a mat-raised-button *ngIf="!authService.isLoggedIn" routerLink="/login" routerLinkActive="active">Log In</a> -->
+    <!-- <a>
+      <mat-icon *ngIf="authService.isLoggedIn" svgIcon="person" class="pointer" routerLink="/login"></mat-icon>
+      <mat-icon *ngIf="!authService.isLoggedIn" svgIcon="input" class="pointer" routerLink="/login" routerLinkActive="active"></mat-icon>
+    </a> -->
+</mat-toolbar>

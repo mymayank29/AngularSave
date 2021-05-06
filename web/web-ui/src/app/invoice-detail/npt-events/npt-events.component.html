@@ -1,0 +1,86 @@
+<div class="invoice-table" [class.fullscreen]="fullscreen">
+  <mat-card>
+    <mat-toolbar>
+      <p>NPT Events Matched to Invoices
+        <!--commenting as part of user story 1674-->
+          <!-- <span *ngFor="let item of invoicesIds; let i = index">
+              <b >{{item}}</b>
+              <b class="ariba-id_divider"
+                *ngIf="invoicesIds.length !== i+1">,</b>
+              <b class="ariba-id_divider" *ngIf="invoicesIds.length == i + 1">;</b>
+          </span> -->
+      </p>
+      <span class="spacer"></span>
+        <mat-icon *ngIf="!fullscreen"
+        svgIcon="expand"
+        matTooltip="Expand table to fullscreen"
+        matTooltipPosition="above"
+        (click)="expand()"
+        class="invoice-table__icon">
+      </mat-icon>
+      <mat-icon *ngIf="fullscreen"
+        svgIcon="unexpand"
+        matTooltip="Fullscreen exit"
+        matTooltipPosition="above"
+        (click)="expand()"
+        class="invoice-table__icon">
+      </mat-icon>
+    </mat-toolbar>
+    <div class="container" [class.container-full]="fullscreen" *ngIf="!loading; else load">
+      <mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8"  *ngIf = "nullMessage == 'Data present'; else Nodata">
+
+          <ng-container matColumnDef="invoice_no">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right mat-column-border-left">{{dbToUiMatches.invoice_no}}</mat-header-cell>
+              <mat-cell *matCellDef="let element" class="mat-column-border-right mat-column-border-left">{{element.invoice_no}}</mat-cell>
+            </ng-container>
+
+        <ng-container matColumnDef="ref_no">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right mat-column-border-left">{{dbToUiMatches.ref_no}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right mat-column-border-left">{{element.ref_no}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="typ">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.typ}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.typ}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="npt_date_start">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.npt_date_start}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.npt_date_start}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="npt_date_end">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.npt_date_end}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.npt_date_end}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="duration">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.duration}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.duration}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="npt_type_detail_description">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.npt_type_detail_description}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.npt_type_detail_description}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="com">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.com}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right view-all">{{element.com}}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+      <ng-template #Nodata>
+        {{nullMessage}}
+      </ng-template>
+    </div>
+    <ng-template #load>
+        <br>
+          <p class="animate">Loading Data...</p>
+        <app-loader [strokeWidth]="2.5" [height]="200" [width]="200" [cx]="50" [cy]="50" [r]="15"></app-loader>
+      </ng-template>
+  </mat-card>
+</div>

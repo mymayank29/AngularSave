@@ -1,0 +1,55 @@
+<div class="invoice-table" [class.fullscreen]="fullscreen">
+  <mat-card>
+    <mat-toolbar>
+      <span>Contract Restrictions</span>
+      <span class="spacer"></span>
+      <!-- <button
+        matTooltip="Navigate to Review Contract page"
+        [matTooltipPosition]="'above'"
+        (click)="navigateToContract()"
+        class="invoice-table__button">Review Contract</button> -->
+      <button
+        matTooltip="Export data to CSV"
+        [matTooltipPosition]="'above'"
+        (click)="saveCsvFile()"
+        class="invoice-table__button">Export to CSV</button>
+        <mat-icon *ngIf="!fullscreen"
+        svgIcon="expand"
+        matTooltip="Expand table to fullscreen"
+        matTooltipPosition="above"
+        (click)="expand()"
+        class="invoice-table__icon">
+      </mat-icon>
+      <mat-icon *ngIf="fullscreen"
+        svgIcon="unexpand"
+        matTooltip="Fullscreen exit"
+        matTooltipPosition="above"
+        (click)="expand()"
+        class="invoice-table__icon">
+      </mat-icon>
+    </mat-toolbar>
+    <div class="container">
+      <mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+
+        <ng-container matColumnDef="npt_event_no">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right mat-column-border-left">Contract Restrictions</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right mat-column-border-left">{{element.npt_event_no}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="typ">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">NPT Type</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.typ}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="com">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">Text</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.com}}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+    </div>
+  </mat-card>
+</div>

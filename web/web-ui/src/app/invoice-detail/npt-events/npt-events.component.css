@@ -1,0 +1,154 @@
+mat-cell, mat-footer-cell, mat-header-cell {
+    height: auto;
+    min-height: 40px;
+    max-height: 40px;
+    font-size: 12px;
+    padding-left: 7px;
+    padding: 2px 0 2px 7px;
+  }
+
+  mat-cell:first-of-type, mat-footer-cell:first-of-type, mat-header-cell:first-of-type {
+    padding-left: 7px;
+  }
+
+  mat-header-row {
+    min-height: 35px;
+    height: auto;
+    max-height: 45px;
+    background-color: #e6e7e8;
+    border-bottom-color: #878888;
+  }
+
+  mat-row {
+    min-height: 35px;
+    border: none;
+    cursor: pointer;
+  }
+
+  mat-header-cell {
+    color: black;
+    font-weight: bold;
+  }
+
+  .invoice-table {
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  .mat-toolbar-single-row {
+    height: 40px;
+    border-radius: 5px 5px 0 0;
+    background-color: #0b2d71;
+    color: white;
+  }
+
+  .mat-toolbar-no-bgc {
+    background: none;
+    color: black;
+    margin: 30px 0;
+    padding: 30px 10px;
+  }
+
+  .mat-column-border-right {
+    border-right: 1px solid #878888;
+  }
+
+  .mat-column-border-left {
+    border-left: 1px solid #878888;
+  }
+
+  .mat-column-align-stretch {
+    align-self: stretch;
+  }
+
+  .mat-toolbar-row {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .mat-stroked-button {
+    border-radius: 5px;
+    background-color: #d72034;
+    margin: 0 0 0 20px;
+  }
+
+  .form-field {
+    width: 300px;
+    font-size: 13px;
+    margin: 0 20px;
+  }
+
+  #mat-option-0, #mat-option-1 {
+    height: 2em;
+  }
+
+  .line-height-1-5em {
+    line-height: 1.5em;
+  }
+
+  .mat-column-npt_type_detail_description {
+    flex: 0 14%;
+  }
+
+  .mat-column-npt_date_start, .mat-column-npt_date_end {
+    flex: 0 0 9%;
+  }
+
+  .mat-column-discount, .mat-column-invoice_net_amount_usd {
+    flex: 0 0 7%;
+  }
+
+  .mat-column-typ, .mat-column-npt_event_no {
+    flex: 0 4.5%;
+  }
+  .mat-column-duration {
+    flex: 0 4%;
+  }
+
+  .view-all {
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  mat-cell:last-of-type, mat-footer-cell:last-of-type, mat-header-cell:last-of-type {
+    padding-right: 8px;
+  }
+
+  .container {
+    overflow: auto;
+    max-height: 350px;
+    border-bottom: 1px solid #878888;
+  }
+
+  .container-full {
+    max-height: 100%;
+    height: 90vh;
+  }
+
+  .mat-card {
+    padding: 15px;
+  }
+  :host {
+    min-height: 100px;
+    flex: 1 1 100%;
+    box-sizing: border-box;
+    overflow: auto;
+    margin: 10px 0;
+
+  }
+  .invoice-table__button {
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 7px 20px;
+    cursor: pointer;
+    line-height: 1.2;
+    border-radius: 7px;
+    margin: auto 10px;
+  }
+  .invoice-table__button.blue {
+    background: #0b2d71;
+  }
+  .ariba-id_divider {
+    padding-right: 5px;
+  }

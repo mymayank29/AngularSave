@@ -1,0 +1,17 @@
+[APP]
+NAME        = '{{APP_NAME}}'
+ROOT        = '~/projects/EDAP_{{APP_NAME}}'
+
+[PKG]
+VERSION     = '{{BUILD_VER}}'
+SUMMARY     = '{{APP_NAME}} application for EDAP'
+LOCATION    = '{{PKG_REPO}}/{{BUILD_VER}}'
+
+[GIT]
+URL         = '{{GIT_URL}}'
+BRANCH      = '{{GIT_BRANCH}}'
+COMMIT      = '{{GIT_COMMIT}}'
+MESSAGE     = '{{GIT_MESSAGE}}'
+TIME        = '{{GIT_TIME}}'
+AUTHOR      = '{{GIT_AUTHOR}}'
+TAG         = '{{BUILD_TAG}}'

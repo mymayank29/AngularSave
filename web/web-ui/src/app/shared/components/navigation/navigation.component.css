@@ -1,0 +1,30 @@
+ul {
+  padding: 0 10px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  list-style: none;
+}
+
+ul a {
+  color: #6b6d6f;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 25px;
+  font-size: 20px;
+  margin-right: 10px;
+  margin-left: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: sans-serif;
+}
+ul a:hover {
+  transition: .3s ease;
+  color: #0b2d71;
+}
+
+ul a.active {
+  color: #0b2d71;
+  font-weight: 900;
+  cursor: not-allowed;
+}

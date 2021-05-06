@@ -1,0 +1,612 @@
+<workflow-app xmlns="uri:oozie:workflow:0.5" name="GOMICA::selector">
+    <global>
+        <configuration>
+            <property>
+                <name>oozie.launcher.mapred.map.child.env</name>
+                <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+            </property>
+            <property>
+                <name>hadoop.security.credential.provider.path</name>
+                <value>jceks://file${PWKS_FILE}</value>
+            </property>
+            <property>
+                <name>mapred.job.queue.name</name>
+                <value>${queueName}</value>
+            </property>
+        </configuration>
+    </global>
+
+    <credentials>
+        <credential name="hs2-creds" type="hive2">
+            <property>
+                <name>hive2.server.principal</name>
+                <value>${jdbcPrincipal}</value>
+            </property>
+            <property>
+                <name>hive2.jdbc.url</name>
+                <value>${jdbcURL}</value>
+            </property>
+        </credential>
+    </credentials>
+
+    <start to="prepare"/>
+
+    <action name="prepare">
+        <fs>
+            <mkdir path='${appStgDir}'/>
+        </fs>
+        <ok to="fork-transformation-selectors"/>
+        <error to="fail"/>
+    </action>
+
+    <fork name="fork-transformation-selectors">
+        <path start="WVWELLHEADER-selector"/>
+        <path start="NEW_SIMSMART_CONTRACTS-selector"/>
+    </fork>
+
+    <join name="join-selectors" to="impala-tables-refresh"/>
+
+    <action name="WVWELLHEADER-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLHEADER.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="fork-wv-selectors"/>
+        <error to="fail"/>
+    </action>
+
+
+    <fork name="fork-wv-selectors">
+        <path start="WVJOB-selector"/>
+        <path start="WVCAS-selector"/>
+        <path start="WVJOBKICK-selector"/>
+        <path start="WVJOBREPORTMUDCHK-selector"/>
+        <path start="WVTESTEQUIP-selector"/>
+    </fork>
+
+    <join name="wv-selector" to="join-selectors"/>
+
+    <action name="NEW_SIMSMART_CONTRACTS-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/simsmart_vw_dwep_contracts.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB_NEW=${rawSimSmartHiveDB_New}</param>
+        </hive2>
+        <ok to="NEW_SIMSMART_VW_DWEP_KETERA_CATALOG-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="NEW_SIMSMART_VW_DWEP_KETERA_CATALOG-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/simsmart_vw_dwep_ketera_catalog.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB_NEW=${rawSimSmartHiveDB_New}</param>
+        </hive2>
+        <ok to="NEW_SIMSMART_PO_AND_SE_LINE_ITEM-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="NEW_SIMSMART_PO_AND_SE_LINE_ITEM-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/simsmart_vw_dwep_po_and_se_line_item.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB_NEW=${rawSimSmartHiveDB_New}</param>
+        </hive2>
+        <ok to="join-selectors"/>
+        <error to="fail"/>
+    </action>
+
+
+
+    <action name="WVJOB-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOB.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBSERVICECONTRACT-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="WVJOBSERVICECONTRACT-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBSERVICECONTRACT.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBAFE-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="WVJOBAFE-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBAFE.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBREPORT-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="WVJOBREPORT-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORT.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBRIG-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="WVJOBRIG-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBRIG.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBPROGRAMPHASE-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="WVJOBPROGRAMPHASE-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBPROGRAMPHASE.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBREPORTTIMELOG-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="WVJOBREPORTTIMELOG-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTTIMELOG.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBREPORTCOSTGEN-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="WVJOBREPORTCOSTGEN-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTCOSTGEN.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBINTERVALPROBLEM-selector"/>
+        <error to="fail"/>
+    </action>
+
+
+    <action name="WVJOBINTERVALPROBLEM-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBINTERVALPROBLEM.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="wv-selector"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="WVCAS-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVCAS.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVCASCOMP-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVCASCOMP-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVCASCOMP.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBCONTACT-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBCONTACT-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBCONTACT.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBDRILLBIT-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBDRILLBIT-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBDRILLBIT.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBDRILLSTRING-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBDRILLSTRING-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBDRILLSTRING.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBDRILLSTRINGCOMP-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBDRILLSTRINGCOMP-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBDRILLSTRINGCOMP.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBDRILLSTRINGDRILLPARAM-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBDRILLSTRINGDRILLPARAM-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBDRILLSTRINGDRILLPARAM.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="wv-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBKICK-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBKICK.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBLOSTCIRC-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBLOSTCIRC-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBLOSTCIRC.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBOFFLINE-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBOFFLINE-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBOFFLINE.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBOFFLINEDATESTIMELOG-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBOFFLINEDATESTIMELOG-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBOFFLINEDATESTIMELOG.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBREPORTCONTACTS-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBREPORTCONTACTS-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTCONTACTS.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBREPORTFLUIDSWELL-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBREPORTFLUIDSWELL-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTFLUIDSWELL.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBREPORTHAZARDID-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBREPORTHAZARDID-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTHAZARDID.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="wv-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBREPORTMUDCHK-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTMUDCHK.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBREPORTMUDVOL-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBREPORTMUDVOL-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTMUDVOL.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBREPORTOFFSHORE-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBREPORTOFFSHORE-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTOFFSHORE.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBRIGBOPCOMP-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBRIGBOPCOMP-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBRIGBOPCOMP.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBSAFETYCHK-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBSAFETYCHK-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBSAFETYCHK.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBSAFETYINCIDENT-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBSAFETYINCIDENT-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBSAFETYINCIDENT.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVJOBSAFETYINCIDENTVICT-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVJOBSAFETYINCIDENTVICT-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBSAFETYINCIDENTVICT.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="wv-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVTESTEQUIP-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVTESTEQUIP.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVTESTLEAKOFF-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVTESTLEAKOFF-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVTESTLEAKOFF.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVWELLBORE-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVWELLBORE-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLBORE.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVWELLBOREDIRSURVEY-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVWELLBOREDIRSURVEY-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLBOREDIRSURVEY.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVWELLBOREDIRSURVEYDATA-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVWELLBOREDIRSURVEYDATA-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLBOREDIRSURVEYDATA.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="WVWELLBOREFORMATION-selector"/>
+        <error to="fail"/>
+    </action>
+    <action name="WVWELLBOREFORMATION-selector" cred="hs2-creds">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLBOREFORMATION.hql</script>
+            <param>LOCATION_PATH=${appStgDir}</param>
+            <param>DESTINATION_DB=${stageHiveDB}</param>
+            <param>SOURCE_DB=${rawWellViewHiveDB}</param>
+        </hive2>
+
+        <ok to="wv-selector"/>
+        <error to="fail"/>
+    </action>
+
+
+    <action name="impala-tables-refresh">
+        <shell xmlns="uri:oozie:shell-action:0.3">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>impala-refresh-all-tables.sh</exec>
+            <argument>${impalaHostInv}</argument>
+            <argument>${stageHiveDB}</argument>
+            <argument>${sandboxName}</argument>
+            <argument>${keytab}</argument>
+            <argument>${hiveMetastorePrincipal}</argument>
+            <argument>${hiveUri}</argument>
+            <argument>${hivessl}</argument>
+            <file>${applicationDir}/shell/impala-refresh-all-tables.sh</file>
+        </shell>
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+
+
+    <action name="report-error">
+        <sub-workflow>
+            <app-path>${commonDir}/app/reporter</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>wfname</name>
+                    <value>${wf:name()}</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>wfuser</name>
+                    <value>${wf:user()}</value>
+                </property>
+                <property>
+                    <name>wflastErrorNode</name>
+                    <value>${wf:lastErrorNode()}</value>
+                </property>
+                <property>
+                    <name>wferrorMessage</name>
+                    <value>${wf:errorMessage(wf:lastErrorNode())}</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+        <ok to="fail"/>
+        <error to="fail"/>
+    </action>
+
+    <kill name="fail">
+        <message>Error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+
+    <end name="end"/>
+
+</workflow-app>
+

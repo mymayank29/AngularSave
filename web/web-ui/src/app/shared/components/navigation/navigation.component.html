@@ -1,0 +1,13 @@
+<ul class="navigation">
+  <li *ngFor="let item of menuList">
+      <a *ngIf="item.name !== 'Invoices'; else invoiceDetail" [routerLink]="'/'+item.link"
+        routerLinkActive="active"
+        [class]="(item.name).toLowerCase()">{{item.name}}</a>
+      <ng-template #invoiceDetail>
+          <a *ngIf="item.name == 'Invoices'; else invoiceDetail"
+          routerLinkActive="active"
+          (click)="(item.name == 'Invoices') ? navigateToInvoiceDetail() : ''"
+          [class]="(item.name).toLowerCase()">{{item.name}}</a>
+      </ng-template>
+  </li>
+</ul>

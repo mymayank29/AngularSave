@@ -1,0 +1,171 @@
+table {
+  width: 100%;
+}
+
+.mat-cell, .mat-footer-cell, .mat-header-cell {
+  height: 25px;
+  font-size: 12px;
+  padding-left: 5px;
+  padding-right: 5px;
+  box-sizing: border-box;
+}
+
+.mat-cell {
+  border-bottom-color: #878888;
+  cursor: pointer;
+}
+
+tr.mat-cell:first-of-type, .mat-footer-cell:first-of-type, .mat-header-cell:first-of-type {
+  padding-left: 11px;
+}
+
+tr.mat-header-row {
+  height: 31px;
+  min-height: 30px;
+  background-color: #e6e7e8;
+}
+
+.mat-row {
+  height: 25px;
+  min-height: 25px;
+}
+
+.mat-header-cell {
+  color: black;
+  font-weight: bold;
+  border-bottom-color: #878888;
+}
+
+.invoice-table {
+  text-align: center;
+  margin: 0 auto;
+}
+
+.mat-toolbar-single-row {
+  height: 40px;
+  border-radius: 5px 5px 0 0;
+  background-color: #0b2d71;
+  color: white;
+}
+
+.mat-toolbar-no-bgc {
+  background: none;
+  color: black;
+  margin: 30px 0;
+  padding: 30px 10px;
+}
+
+.mat-column-border-right {
+  border-right: 1px solid #878888;
+}
+
+.mat-column-border-left {
+  border-left: 1px solid #878888;
+}
+
+.mat-column-align-stretch {
+  align-self: stretch;
+}
+
+.mat-toolbar-row {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.mat-stroked-button {
+  border-radius: 5px;
+  background-color: #d72034;
+  margin: 0 0 0 20px;
+}
+
+.form-field {
+  width: 300px;
+  font-size: 13px;
+  margin: 0 20px;
+}
+
+#mat-option-0, #mat-option-1 {
+  height: 2em;
+}
+
+.line-height-1-5em {
+  line-height: 1.5em;
+}
+
+
+.mat-column-recovered,
+.mat-column-pt_spent_leakage_npt,
+.mat-column-spent_leakage_confirmed {
+  flex: 0 0 6%;
+}
+
+.mat-column-afe {
+  flex: 0 0 11%;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.mat-column-contract_id, .mat-column-ariba_doc_id, .mat-column-price {
+  flex: 0 0 6.5%;
+}
+
+.mat-column-npt_event_no, .mat-column-submit_date {
+  flex: 0 0 5%;
+}
+
+.mat-column-parent_vendor {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.mat-cell:last-of-type, .mat-footer-cell:last-of-type, .mat-header-cell:last-of-type {
+  padding-right: 8px;
+}
+
+.container {
+  max-height: 30vh;
+  overflow: auto;
+  border-bottom: 1px solid #878888;
+}
+
+.container-full {
+  max-height: 100%;
+  height: 90vh;
+}
+
+.editable-cell-input {
+  margin: 5px;
+  margin-left: 0;
+  padding: 2px;
+  padding-left: 0;
+  text-align: left;
+}
+
+.editable-cell-input:focus {
+  border: 1px solid #878888;
+}
+
+.mat-card {
+  padding: 15px;
+}
+
+:host {
+  /* flex: 1 1 100%;
+  box-sizing: border-box; */
+  /* max-height: 300px; */
+  min-height: 200px;
+}
+
+.invoice-table__button {
+  background: transparent;
+  border: 1px solid #fff;
+  color: #fff;
+  padding: 7px 20px;
+  cursor: pointer;
+  line-height: 1.2;
+  border-radius: 7px;
+  margin: auto 10px;
+}
+.invoice-table__button.blue {
+  background: #0b2d71;
+}

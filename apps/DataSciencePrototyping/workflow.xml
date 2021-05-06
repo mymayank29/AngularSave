@@ -1,0 +1,43 @@
+<workflow-app xmlns="uri:oozie:workflow:0.5" name="GOM_DP:producer-python">
+    <global>
+        <job-tracker>${jobTracker}</job-tracker>
+        <name-node>${nameNode}</name-node>
+        <configuration>
+            <property>
+                <name>mapred.job.queue.name</name>
+                <value>${queueName}</value>
+            </property>
+        </configuration>
+    </global>
+
+    <credentials>
+        <credential name="hs2-creds" type="hive2">
+            <property>
+                <name>hive2.server.principal</name>
+                <value>${hivePrincipal}</value>
+            </property>
+            <property>
+                <name>hive2.jdbc.url</name>
+                <value>${hiveJdbcURL}</value>
+            </property>
+        </credential>
+    </credentials>
+
+    <start to="prepare"/>
+
+    <action name="prepare-env">
+        <shell xmlns="uri:oozie:shell-action:0.3">
+            <exec>run.sh</exec>
+            <file>shell/run.sh</file>
+            <capture-output/>
+        </shell>
+        <ok to="find-target-directory"/>
+        <error to="stamp-fail-snapshot"/>
+    </action>
+
+    <kill name="fail">
+        <message>Error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+
+    <end name="end"/>
+</workflow-app>

@@ -1,0 +1,13 @@
+<svg [attr.height]="height" [attr.width]="height" class="spinner" viewBox="25 25 50 50">
+  <style type="text/css">
+    circle {stroke: url(#gradient)}
+  </style>
+  <defs>
+    <linearGradient id="gradient">
+      <!-- <stop offset="5%" stop-color="#48b1e5" /> -->
+      <stop offset="5%" stop-color="0b2d71" />
+      <stop offset="95%" stop-color="#d72034" />
+    </linearGradient>
+  </defs>
+  <circle class="path" [attr.cx]="cx" [attr.cy]="cy" [attr.r]="r" fill="none" [attr.stroke-width]="strokeWidth" stroke-miterlimit="10" />
+</svg>

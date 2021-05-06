@@ -1,0 +1,1166 @@
+<workflow-app xmlns="uri:oozie:workflow:0.5" name="GOMICA::publisher">
+    <global>
+        <job-tracker>${jobTracker}</job-tracker>
+        <name-node>${nameNode}</name-node>
+        <configuration>
+            <property>
+                <name>oozie.launcher.mapred.map.child.env</name>
+                <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+            </property>
+            <property>
+                <name>hadoop.security.credential.provider.path</name>
+                <value>jceks://file${PWKS_FILE}</value>
+            </property>
+            <property>
+                <name>mapred.job.queue.name</name>
+                <value>${queueName}</value>
+            </property>
+        </configuration>
+    </global>
+
+    <credentials>
+        <credential name="hcat" type="hcat">
+            <property>
+                <name>hcat.metastore.uri</name>
+                <value>${metastoreUri}</value>
+            </property>
+            <property>
+                <name>hcat.metastore.principal</name>
+                <value>${metastorePrincipal}</value>
+            </property>
+        </credential>
+        <credential name="hive2" type="hive2">
+            <property>
+                <name>hive2.server.principal</name>
+                <value>${jdbcPrincipal}</value>
+            </property>
+            <property>
+                <name>hive2.jdbc.url</name>
+                <value>${jdbcURL}</value>
+            </property>
+        </credential>
+    </credentials>
+
+    <start to="drop_tables"/>
+    
+
+    <!-- <start to="fork-wv-selectors"/> -->
+
+    <!-- <action name="create_tables_from_sql_script">
+        <java>
+            <main-class>com.chevron.gomica.sql.SQLScriptRunner</main-class>
+            <arg>-c</arg>
+            <arg>${jdbcConnection}</arg>
+            <arg>-u</arg>
+            <arg>${jdbcUsername}</arg>
+            <arg>-pa</arg>
+            <arg>${jdbcPassAlias}</arg>
+            <arg>-pe</arg>
+            <arg>${PWKS_KEY}</arg>
+            <arg>-s</arg>
+            <arg>${applicationDir}/sql/create_gom_ica_tables.sql</arg>
+        </java>
+        <ok to="fork-wv-selectors"/>
+        <error to="fail"/>
+    </action> -->
+
+        <action name="drop_tables">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapred.map.child.env</name>
+                    <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+                </property>
+                <property>
+                    <name>hadoop.security.credential.provider.path</name>
+                    <value>jceks://file${PWKS_FILE}</value>
+                </property>
+            </configuration>
+
+            <arg>eval</arg>
+            <arg>-libjars</arg>
+            <arg>${applicationDir}/lib/sqljdbc4.jar</arg>
+            <arg>--connect</arg>
+            <arg>${jdbcConnection}</arg>
+            <arg>--username</arg>
+            <arg>${jdbcUsername}</arg>
+            <arg>--password-alias</arg>
+            <arg>${jdbcPassAlias}</arg>
+            <arg>--query</arg>
+            <arg>
+                <!-- DROP TABLE IF EXISTS gomica.test3;
+                DROP TABLE IF EXISTS gomica.ack_test1; -->
+                 DROP TABLE IF EXISTS gomica.afe_detail;
+                 DROP TABLE IF EXISTS gomica.amendments_to_contracts;
+                 DROP TABLE IF EXISTS gomica.cia_invoice_to_npt_link_detailed;
+                 DROP TABLE IF EXISTS gomica.interval_problem;
+                 DROP TABLE IF EXISTS gomica.interval_problem_full_sf;
+                 DROP TABLE IF EXISTS gomica.interval_problem_full_with_link_sf;
+                 DROP TABLE IF EXISTS gomica.invoice;
+                 -- DROP TABLE IF EXISTS gomica.writeback_invoice_spent_leakage
+                 -- DROP TABLE IF EXISTS gomica.invoice_for_full_sf;
+                 DROP TABLE IF EXISTS gomica.cia_invoice_to_npt_link_detailed;
+                 DROP TABLE IF EXISTS gomica.invoice_to_npt_link;
+                 DROP TABLE IF EXISTS gomica.invoices_flagged_for_review;
+                 DROP TABLE IF EXISTS gomica.overcharge_detail;
+                 DROP TABLE IF EXISTS gomica.pdf_contract_info;
+                 DROP TABLE IF EXISTS gomica.simsmart_vw_dwep_po_and_se_line_item;
+                 DROP TABLE IF EXISTS gomica.time_log_detail;
+                 DROP TABLE IF EXISTS gomica.wvjobreport;
+                 DROP TABLE IF EXISTS gomica.wvwellbore;
+                 DROP TABLE IF EXISTS gomica.wvjob;
+                 DROP TABLE IF EXISTS gomica.wvjobsafetychk;
+                 DROP TABLE IF EXISTS gomica.wvwellheader;
+                 DROP TABLE IF EXISTS gomica.wvjobreporttimelog;
+                 DROP TABLE IF EXISTS gomica.wvjobintervalproblem;
+
+            </arg>
+            <file>${applicationDir}/hive-site.xml</file>
+        </sqoop>
+        <ok to="create_table_savedb"/>
+        <error to="fail"/>
+    </action>
+
+            <action name="create_table_savedb">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapred.map.child.env</name>
+                    <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+                </property>
+                <property>
+                    <name>hadoop.security.credential.provider.path</name>
+                    <value>jceks://file${PWKS_FILE}</value>
+                </property>
+            </configuration>
+
+            <arg>eval</arg>
+            <arg>-libjars</arg>
+            <arg>${applicationDir}/lib/sqljdbc4.jar</arg>
+            <arg>--connect</arg>
+            <arg>${jdbcConnection}</arg>
+            <arg>--username</arg>
+            <arg>${jdbcUsername}</arg>
+            <arg>--password-alias</arg>
+            <arg>${jdbcPassAlias}</arg>
+            <arg>--query</arg>
+            <arg>
+                    CREATE TABLE gomica.afe_detail(
+                        afe varchar(max));
+                        
+                    CREATE TABLE gomica.amendments_to_contracts(
+                        amendment_contract_id varchar(max)
+                        ,contract_hierarchy varchar(max)
+                        ,contract_id varchar(max)
+                        ,contract_status varchar(max)
+                        ,evergreen_y_n varchar(max)
+                        ,intercompany_y_n varchar(max)
+                        ,payment_terms varchar(max)
+                        ,transactable_y_n varchar(max));
+                        
+                    CREATE TABLE gomica.cia_invoice_to_npt_link_detailed(
+                            ariba_doc_id varchar(max)
+                            , isWether bit
+                            , interval_problem_id bigint
+                            , npt_sub_group_duration float
+                    --        , cost_gen_id varchar(max)
+                            , byCode bit
+                            , byDate bit
+                            , byTitle bit
+                            , byGlCode varchar(max)
+                            , byGlCodePercents bigint
+                            , byTitleImpr varchar(max)
+                            , byTitleImprPercents bigint
+                            , byInvoiceDescription varchar(max)
+                            , isExceptionalMatchCase bit
+                            , isEmptyDate bit
+                            , id varchar(12) NOT NULL PRIMARY KEY
+                            , afenumber varchar(max)
+                            , servicetyp varchar(max)
+                            , rigno varchar(max)
+                            , idwell varchar(max)
+                            , idrecntervalProblem varchar(max)
+                            , job_id varchar(max)
+                            , npt_date_start varchar(max)
+                            , npt_date_end varchar(max)
+                            , parent_name varchar(max)
+                            , cost float
+                            , estcostoverride float
+                            , status varchar(max)
+                            , refno varchar(max)
+                            , group_refno varchar(max)
+                            , duration float
+                            , typ varchar(max)
+                            , typdetail varchar(max)
+                            , com varchar(max)
+                            , internalProblemType varchar(max)
+                            , gl_code_str varchar(max)
+                            , costgen_des varchar(max)
+                            , activitydescr varchar(max)
+                            , npt_type_detail_description varchar(max)
+                            , npt_type_typedetail_concat varchar(max)
+                            , npt_event_no varchar(max)
+                            , is_date_valid bit
+                            , contract_title varchar(max)
+                            , contract_id varchar(max)
+                            , inv_start_date varchar(max)
+                            , inv_end_date varchar(max)
+                            , submit_date varchar(max)
+                            , approved_date datetime
+                            , supplier_name_without_id varchar(max)
+                            , invoice_number varchar(max)
+                            , supplier_id varchar(max)
+                            , wbs_element_id varchar(max)
+                            , supplier_name_without varchar(max)
+                            , contract_owner_name varchar(max)
+                            , wbs_element varchar(max)
+                            , parent_vendor varchar(max)
+                            , price float
+                            , commodity_ids varchar(max)
+                            , description varchar(max)
+                            , contract_title_no_vendor varchar(max)
+                            , npt_duration_date_related float
+                            , duration_total bigint
+                            , cost_per_hour float
+                            , pt_spent_leakage_npt float
+                            , pt_spent_leakage_total float
+                            , pt_spent_leakage_date_related float
+                            , afe varchar(max)
+                            );
+
+                    CREATE TABLE gomica.interval_problem(
+                        interval_problem_id varchar(450)
+                            , afenumber varchar(max)
+                            , servicetyp varchar(max)
+                            , rigno varchar(max)
+                            , idwell varchar(max)
+                            , idrecntervalProblem varchar(max)
+                            , job_id varchar(max)
+                            , npt_date_start varchar(max)
+                            , npt_date_end varchar(max)
+                            , parent_name varchar(max)
+                            , cost float
+                            , estcostoverride float
+                            , status varchar(max)
+                            , refno varchar(max)
+                            , duration float
+                            , typ varchar(max)
+                            , typdetail varchar(max)
+                            , com varchar(max)
+                            , internalProblemType varchar(max)
+                            , gl_code_str varchar(max)
+                            , costgen_des varchar(max)
+                            , activitydescr varchar(max)
+                            , npt_type_detail_description varchar(max)
+                            , npt_type_typedetail_concat varchar(max)
+                            , npt_event_no varchar(max)
+                            , isWether bit
+                    );
+
+                    CREATE TABLE gomica.interval_problem_full_sf(
+                        activitydescr varchar(max)
+                        ,afe varchar(max)
+                        ,com varchar(max)
+                        ,costgen_des varchar(max)
+                        ,duration float
+                        ,gl_code_str varchar(max)
+                        ,internalProblemType varchar(max)
+                        ,job_end_date varchar(max)
+                        ,job_id varchar(max)
+                        ,npt_date_end varchar(max)
+                        ,npt_date_start varchar(max)
+                        ,npt_type_detail_description varchar(max)
+                        ,typ varchar(max)
+                        ,typdetail varchar(max)
+                        ,wv_job_start_date varchar(max));
+                        
+                    CREATE TABLE gomica.interval_problem_full_with_link_sf(
+                        id varchar(12) NOT NULL PRIMARY KEY
+                            ,ariba_doc_id varchar(max)
+                            ,job_id varchar(max)
+                            ,com varchar(max)
+                            ,typ varchar(max)
+                            ,npt_event_no varchar(max)
+                            ,npt_date_end varchar(max)
+                            ,npt_date_start varchar(max)
+                            ,duration float
+                            ,npt_type_detail_description varchar(max)
+                    );
+
+                    CREATE TABLE gomica.invoice(
+                        ariba_doc_id varchar(max)
+                        ,contract_id varchar(max)
+                        ,contract_title varchar(max)
+                        ,contract_title_no_vendor varchar(max)
+                        ,inv_end_date varchar(max)
+                        ,inv_start_date varchar(max)
+                        ,invoice_number varchar(max)
+                        ,is_date_valid bit
+                        ,supplier_id varchar(max)
+                        ,supplier_name_without_id varchar(max));
+
+
+                    --CREATE TABLE gomica.writeback_invoice_spent_leakage(
+                    --    id varchar(12)
+                    --    ,invoice_status varchar(max)
+                    --    ,npt_event_no varchar(max)
+                    --    ,comment varchar(max)
+                    --    ,modifyed_by varchar(max)
+                    --    ,modifyed_date datetime
+                    --    ,spent_leakage_confirmed float
+                    --    ,recovered float
+                    --    CONSTRAINT invoice_writeback_pk PRIMARY KEY (id));
+                        
+                    --CREATE TABLE gomica.invoice_for_full_sf(
+                    --    afe varchar(max)
+                    --    ,wbs_element varchar(max)
+                    --    , supplier_name_without nvarchar(2000)
+                    --    , contract_owner_name nvarchar(1000)
+                    --    ,ariba_doc_id varchar(200)
+                    --    ,id varchar(12)
+                    --    ,isWether bit
+                    --    ,contract_id nvarchar(500)
+                    --    ,jobtyp varchar(500)
+                    --    ,npt_event_no varchar(500)
+                    --    ,npt_date_start varchar(100)
+                    --    ,npt_date_end varchar(100)
+                    --    ,npt_duration float
+                    --    ,parent_vendor varchar(500)
+                    --    ,price float
+                    --    ,pt_spent_leakage_npt float
+                    --    ,submit_date varchar(100)
+                    --    ,wellname nvarchar(200)
+                    --    ,bydate bit
+                    --    ,bytitle bit
+                    --    ,byglcode varchar(50)
+                    --    ,byglcodepercents int
+                    --    ,rigno nvarchar(500)
+                    --    ,refno varchar(100)
+                    --    ,servicetyp varchar(2000)
+                    --    ,npt_type_detail_description nvarchar(5000)
+                    --    ,npt_type_typedetail_concat varchar(2000)
+                    --    ,npt_com nvarchar(5000)
+                    --    ,contract_title nvarchar(1000)
+                    --    ,inv_start_date varchar(100)
+                    --    ,inv_end_date varchar(100)
+                    --    ,approved_date datetime    
+                        --,INDEX idx_invoice_full NONCLUSTERED (bydate, isWether, bytitle, id)
+                    --    ,INDEX idx_invoice_full NONCLUSTERED (bydate, isWether, id)
+                    --    CONSTRAINT invoice_full_pk PRIMARY KEY (id));
+
+                    --IF (OBJECT_ID("gomica.FK_InvoiceId", "F") IS NULL)
+                    --    BEGIN
+                    --        ALTER TABLE gomica.writeback_invoice_spent_leakage WITH NOCHECK
+                    --        ADD CONSTRAINT FK_InvoiceId FOREIGN KEY (id)
+                    --        REFERENCES gomica.invoice_for_full_sf(id)
+                    --    END
+
+
+                        
+
+                    CREATE TABLE gomica.invoice_to_npt_link(
+                        id varchar(12) NOT NULL PRIMARY KEY
+                        ,ariba_doc_id varchar(max)
+                        ,interval_problem_id bigint
+                        ,byDate bit
+                        ,byTitle bit
+                        ,byGlCode varchar(max)
+                        ,byGlCodePercents bigint
+                        ,byTitleImpr varchar(max)
+                        ,byTitleImprPercents bigint
+                        ,byInvoiceDescription varchar(max)
+                        ,isEmptyDate bit
+                        ,isExceptionalMatchCase bit
+                        ,byCode bit
+                    );
+
+
+                    --CREATE TABLE gomica.invoices_flagged_for_review(
+                    --      ,wellname varchar(300)
+                    --      ,supplier varchar(300)
+                    --      ,servicetyp varchar(100)
+                    --      ,npt_event varchar(100)
+                    --      ,npt_descr varchar(2000)
+                    --      ,contract_title varchar(500)
+                    --      ,ariba_doc_id varchar(100)
+                    --      ,price float
+                    --      ,potential_spend_leak_total float
+                    --      ,invoice_status varchar(100)
+                    --      ,wbs_no varchar
+                    --      ,ref_no varchar(30)
+                    --      ,npt_dates varchar(100)
+                    --      ,is_new_leakage varchar(100)
+                    --      ,amount_leak_captured float
+                    --      ,job_category varchar(100)
+                    --CONSTRAINT invoices_flagged_for_review_pk PRIMARY KEY (invoice_id));
+
+                    CREATE TABLE gomica.overcharge_detail(
+                        contract_id varchar(20)
+                        ,line_item_desc varchar(max)
+                        ,num_mult_line_items bigint
+                        ,number_unique bigint
+                        ,uom_llf_distinct_count bigint
+                        ,sum_cost_total decimal(38,10)
+                        ,mean_unit_price float
+                        ,min_unit_price float
+                        ,max_unit_price float
+                        ,n bigint
+                        ,commondity_id varchar(max)
+                        ,supplier_id bit
+                        ,material_item_number varchar(max)
+                        ,line_item_desc_length int
+                        ,line_item_desc_misclabor bit
+                        ,curskew int
+                        ,range_unit_price float
+                        ,weighted_sd_unit_price float
+                        ,skew_cumulative_total float
+                    );
+
+                    CREATE TABLE gomica.pdf_contract_info(
+                        contains_amendment bit
+                        ,contract_id varchar(max));
+                        
+                    CREATE TABLE gomica.simsmart_vw_dwep_po_and_se_line_item(
+                        business_key varchar(450) NOT NULL PRIMARY KEY
+                        ,ariba_doc_id varchar(100)
+                        ,contract_name varchar(max)
+                        ,part_number varchar(max)
+                        ,description varchar(max)
+                        ,unit_price_llf varchar(max)
+                        ,quantity_llf varchar(max)
+                        ,discount varchar(max)
+                        ,invoice_net_amount_usd varchar(max)
+                        ,end_date bigint
+                        ,start_date bigint
+                        ,INDEX idx_sims_po_se_lineitem CLUSTERED (ariba_doc_id)		
+                    );
+
+
+                    CREATE TABLE gomica.time_log_detail(
+                        activitycode varchar(max)
+                        ,duration varchar(max)
+                        ,end_date varchar(max)
+                        ,is_npt bit);
+                        
+                    CREATE TABLE gomica.wvjobreport(
+                        idrec varchar(450) NOT NULL PRIMARY KEY
+                        ,idrecparent varchar(max)
+                        ,durationpersonneltotcalc varchar(max)
+                        ,durationsinceltinc varchar(max)
+                        ,durationsincerptinc varchar(max)
+                        ,gasbackgroundavg varchar(max)
+                        ,gasconnectionavg varchar(max)
+                        ,gasdrillavg varchar(max)
+                        ,gastripavg varchar(max)
+                        ,headcountcalc varchar(max)
+                        ,idrecwellborecalc varchar(max)
+                        ,plannextrptops varchar(max)
+                        ,remarks varchar(max)
+                        ,rigtime varchar(max)
+                        ,rigtimecumcalc varchar(max)
+                        ,rpttmactops varchar(max)
+                        ,statusend varchar(max)
+                        ,summaryops varchar(max)
+                        ,tmrotatingcalc varchar(max)
+                        ,usertxt1 varchar(max)
+                        ,depthprogressdpcalc varchar(max)
+                        ,dttmstart bigint
+                        ,durationtimelogcumspudcalc varchar(max)
+                        ,durationtimelogtotcumcalc varchar(max)
+                        ,reportnocalc varchar(max)
+                        ,dttmstartdate datetime
+                    );
+
+                    CREATE TABLE gomica.wvwellbore(
+                        idrec varchar(450)
+                        ,des varchar(max)
+                        ,idrecparent varchar(max)
+                        ,profiletyp varchar(max)
+                        ,wellboreida varchar(max)
+                        ,wellboreidb varchar(max)
+                    CONSTRAINT wvwellbore_pk PRIMARY KEY (idrec));
+
+                    CREATE TABLE gomica.wvjob(
+                        idrec varchar(450) NOT NULL PRIMARY KEY
+                        ,idwell varchar(max)
+                        ,dttmend bigint
+                        ,dttmstart bigint
+                        ,jobtyp varchar(max)
+                        ,wvtyp varchar(max)
+                    );
+
+                    CREATE TABLE gomica.wvjobsafetychk(
+                        idrec varchar(450)
+                        ,idrecparent varchar(max)
+                        ,com varchar(max)
+                        ,des varchar(max)
+                        ,inspector varchar(max)
+                        ,result varchar(max)
+                        ,typ varchar(max)
+                        ,dttmdate datetime
+                    CONSTRAINT wvjobsafetychk_pk PRIMARY KEY (idrec));
+
+                    CREATE TABLE gomica.wvwellheader(
+                        idwell varchar(250) NOT NULL PRIMARY KEY
+                        , division varchar(max)
+                        , elvorigkb varchar(max)
+                        , fieldname varchar(max)
+                        , kbtocascalc varchar(max)
+                        , kbtomudcalc varchar(max)
+                        , kbtotubcalc varchar(max)
+                        , lease varchar(max)
+                        , stateprov varchar(max)
+                        , waterdepth varchar(max)
+                        , wellida varchar(max)
+                        , wellidc varchar(max)
+                        , wellidd varchar(max)
+                        , wellname varchar(max)
+                    );
+
+                    CREATE TABLE gomica.wvjobreporttimelog(
+                        idrec varchar(450) NOT NULL PRIMARY KEY
+                        , idrecparent varchar(max)
+                        , code1 varchar(max)
+                        , com varchar(max)
+                        , phase varchar(max)
+                        , dttmstartcalc bigint
+                        , durationnoprobtimecalc varchar(max)
+                        , durationproblemtimecalc varchar(max)
+                        , refnoproblemcalc varchar(max)
+                    );
+
+                    CREATE TABLE gomica.wvjobintervalproblem(
+                        idrec varchar(450) NOT NULL PRIMARY KEY
+                        , idrecparent varchar(max)
+                        , accountablepty varchar(max)
+                        , com varchar(max)
+                        , depthend varchar(max)
+                        , depthstart varchar(max)
+                        , des varchar(max)
+                        , durationnetcalc varchar(max)
+                        , estcostoverride varchar(max)
+                        , refno varchar(max)
+                        , status varchar(max)
+                        , typ varchar(max)
+                        , typdetail varchar(max)
+                        , dttmstartdate datetime
+                        , dttmenddate datetime
+                    );
+            </arg>
+            <file>${applicationDir}/hive-site.xml</file>
+        </sqoop>
+        <ok to="drop_views"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="drop_views">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapred.map.child.env</name>
+                    <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+                </property>
+                <property>
+                    <name>hadoop.security.credential.provider.path</name>
+                    <value>jceks://file${PWKS_FILE}</value>
+                </property>
+            </configuration>
+
+            <arg>eval</arg>
+            <arg>-libjars</arg>
+            <arg>${applicationDir}/lib/sqljdbc4.jar</arg>
+            <arg>--connect</arg>
+            <arg>${jdbcConnection}</arg>
+            <arg>--username</arg>
+            <arg>${jdbcUsername}</arg>
+            <arg>--password-alias</arg>
+            <arg>${jdbcPassAlias}</arg>
+            <arg>--query</arg>
+            <arg>
+                 DROP VIEW IF EXISTS gomica.invoice_for_full_sf_view;
+                --DROP VIEW IF EXISTS gomica.jobreport_npt_related;
+            </arg>
+            <file>${applicationDir}/hive-site.xml</file>
+        </sqoop>
+        <ok to="create_views"/>
+        <error to="fail"/>
+    </action>
+
+
+    <action name="create_views">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapred.map.child.env</name>
+                    <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+                </property>
+                <property>
+                    <name>hadoop.security.credential.provider.path</name>
+                    <value>jceks://file${PWKS_FILE}</value>
+                </property>
+            </configuration>
+
+            <arg>eval</arg>
+            <arg>-libjars</arg>
+            <arg>${applicationDir}/lib/sqljdbc4.jar</arg>
+            <arg>--connect</arg>
+            <arg>${jdbcConnection}</arg>
+            <arg>--username</arg>
+            <arg>${jdbcUsername}</arg>
+            <arg>--password-alias</arg>
+            <arg>${jdbcPassAlias}</arg>
+            <arg>--query</arg>
+            <arg>
+				CREATE VIEW gomica.invoice_for_full_sf_view
+                 AS
+				SELECT 
+				i.afe  AS afe
+				,i.wbs_element AS wbs_element
+				,i.supplier_name_without AS supplier_name_without
+				,i.contract_owner_name AS contract_owner_name
+				,i.ariba_doc_id AS ariba_doc_id
+				,i.id AS id
+				,i.isWether AS isWether
+				,i.contract_id AS contract_id
+				,i.jobtyp AS jobtyp
+				,i.npt_event_no AS npt_event_no
+				,i.npt_date_start AS npt_date_start
+				,i.npt_date_end AS npt_date_end
+				,i.npt_duration AS npt_duration
+				,i.parent_vendor AS parent_vendor
+				,i.price AS price
+				,i.pt_spent_leakage_npt AS pt_spent_leakage_npt
+				,i.submit_date AS submit_date
+				,i.wellname AS wellname
+				,i.bydate AS bydate
+				,i.bytitle AS bytitle
+				,i.byglcode AS byglcode
+				,i.byglcodepercents AS byglcodepercents
+				,i.rigno AS rigno
+				,i.refno AS refno
+				,i.servicetyp AS servicetyp
+				,i.npt_type_detail_description AS npt_type_detail_description
+				,i.npt_type_typedetail_concat AS npt_type_typedetail_concat
+				,i.npt_com AS npt_com
+				,i.contract_title AS contract_title
+				,i.inv_start_date AS inv_start_date
+				,i.inv_end_date AS inv_end_date
+				,i.approved_date AS approved_date
+				--writeback columns
+				,w.invoice_status AS invoice_status
+				--,w.npt_event_no AS npt_event_no
+				,w.comment AS comment
+				,w.modifyed_by AS modifyed_by
+				,w.modifyed_date AS modifyed_date
+				,w.spent_leakage_confirmed AS spent_leakage_confirmed
+				,w.recovered AS recovered
+				FROM gomica.invoice_for_full_sf i
+				LEFT JOIN gomica.writeback_invoice_spent_leakage w ON i.id = w.id;
+
+   
+            </arg>
+            <file>${applicationDir}/hive-site.xml</file>
+        </sqoop>
+        <ok to="fork-wv-selectors"/>
+        <error to="fail"/>
+    </action>
+
+             
+
+    <fork name="fork-wv-selectors">
+        <path start="export_pdf_contract_info"/>
+        <path start="export_afe_detail"/>
+        <path start="export_interval_problem_full_sf"/>
+        <path start="export_wvjobintervalproblem"/>
+    </fork>
+    <join name="publish_join" to="end"/>
+
+    <action name="export_pdf_contract_info">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>pdf_contract_info</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_amendments_to_contracts"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_amendments_to_contracts">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>amendments_to_contracts</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_overcharge_detail"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_overcharge_detail">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>overcharge_detail</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="drop_fk_constraint_invoice_for_full_sf"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="drop_fk_constraint_invoice_for_full_sf" cred="hcat,hive2">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapred.map.child.env</name>
+                    <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+                </property>
+                <property>
+                    <name>hadoop.security.credential.provider.path</name>
+                    <value>jceks://file${PWKS_FILE}</value>
+                </property>
+            </configuration>
+
+            <arg>eval</arg>
+            <arg>-libjars</arg>
+            <arg>${applicationDir}/lib/sqljdbc4.jar</arg>
+            <arg>--connect</arg>
+            <arg>${jdbcConnection}</arg>
+            <arg>--username</arg>
+            <arg>${jdbcUsername}</arg>
+            <arg>--password-alias</arg>
+            <arg>${jdbcPassAlias}</arg>
+            <arg>--query</arg>
+            <arg>IF (OBJECT_ID('gomica.FK_InvoiceId', 'F') IS NOT NULL) BEGIN ALTER TABLE gomica.writeback_invoice_spent_leakage DROP CONSTRAINT FK_InvoiceId END</arg>
+            <file>${applicationDir}/hive-site.xml</file>
+        </sqoop>
+
+        <ok to="export_invoice_for_full_sf"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="export_invoice_for_full_sf">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>invoice_for_full_sf</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>8</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+        <ok to="add_fk_constraint_invoice_for_full_sf"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="add_fk_constraint_invoice_for_full_sf" cred="hcat,hive2">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapred.map.child.env</name>
+                    <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+                </property>
+                <property>
+                    <name>hadoop.security.credential.provider.path</name>
+                    <value>jceks://file${PWKS_FILE}</value>
+                </property>
+            </configuration>
+
+            <arg>eval</arg>
+            <arg>-libjars</arg>
+            <arg>${applicationDir}/lib/sqljdbc4.jar</arg>
+            <arg>--connect</arg>
+            <arg>${jdbcConnection}</arg>
+            <arg>--username</arg>
+            <arg>${jdbcUsername}</arg>
+            <arg>--password-alias</arg>
+            <arg>${jdbcPassAlias}</arg>
+            <arg>--query</arg>
+            <arg>ALTER TABLE ${schema}.writeback_invoice_spent_leakage WITH NOCHECK ADD CONSTRAINT FK_InvoiceId FOREIGN KEY (id) REFERENCES ${schema}.invoice_for_full_sf(id)</arg>
+            <file>${applicationDir}/hive-site.xml</file>
+        </sqoop>
+
+        <ok to="export_interval_problem"/>
+        <error to="fail"/>
+    </action>
+
+
+   
+
+    <action name="export_interval_problem">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>interval_problem</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="publish_join"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_afe_detail">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>afe_detail</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_wvwellheader"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_wvwellheader">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>wvwellheader</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_invoice_to_npt_link"/>
+
+        <error to="fail"/>
+    </action>
+
+
+    <action name="export_invoice_to_npt_link">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>invoice_to_npt_link</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+        <ok to="export_time_log_detail"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_time_log_detail">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>time_log_detail</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_invoice"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_invoice">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>invoice</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="publish_join"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_interval_problem_full_sf">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>interval_problem_full_sf</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_interval_problem_full_with_link_sf"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_interval_problem_full_with_link_sf">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>interval_problem_full_with_link_sf</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_simsmart_vw_dwep_po_and_se_line_item"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_simsmart_vw_dwep_po_and_se_line_item">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>simsmart_vw_dwep_po_and_se_line_item</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_wvjobreport"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_wvjobreport">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>wvjobreport</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_wvjobreporttimelog"/>
+
+        <error to="fail"/>
+    </action>
+
+
+    <action name="export_wvjobreporttimelog">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>wvjobreporttimelog</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="publish_join"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_wvjobintervalproblem">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>wvjobintervalproblem</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_wvwellbore"/>
+
+        <error to="fail"/>
+    </action>
+
+    <action name="export_wvwellbore">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>wvwellbore</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_wvjob"/>
+
+        <error to="fail"/>
+    </action>
+    <action name="export_wvjob">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>wvjob</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="export_wvjobsafetychk"/>
+
+        <error to="fail"/>
+    </action>
+    <action name="export_wvjobsafetychk">
+        <sub-workflow>
+            <app-path>${applicationDir}/oozie/sub-workflows/sqoop_export.xml</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>tableName</name>
+                    <value>wvjobsafetychk</value>
+                </property>
+                <property>
+                    <name>mappers</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+
+        <ok to="publish_join"/>
+
+        <error to="fail"/>
+    </action>
+
+     <!-- CREATING INVOICES VIEW FOR INVOICE PAGE LOAD OPTIMIZATION  !-->
+
+
+    <kill name="fail">
+        <message>Error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+
+    <end name="end"/>
+
+</workflow-app>

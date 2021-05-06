@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  git_get_src
+#   DESCRIPTION:  get sources from git repository
+#    PARAMETERS:  git_get_src "${repo_url}" "${branch}" "${dst_dir}"
+#       RETURNS:  ---
+#===============================================================================
+function git_get_src ()
+{
+    local -ri ATTEMPTS=5
+    local -r REPO="${1}"
+    local -r BRANCH="${2}"
+    local -r DSTDIR="${3}"
+
+    local cmd="git clone -q -b ${BRANCH} ${REPO} ${DSTDIR}"
+
+    echo -ne "${cmd}"
+    for (( attempt=1; attempt<=ATTEMPTS; attempt++ )); do
+        rm -rf "${DSTDIR}"
+        if ${cmd} &> /dev/null; then
+            echo -ne " - done (attempt ${attempt})\n"
+            break
+        elif [ ${attempt} -ge ${ATTEMPTS} ]; then
+            echo -ne " - failed (lattempt ${attempt})\n"
+            exit 1
+        fi
+    done
+}   # ----------  end of function git_get_src  ----------

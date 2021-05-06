@@ -1,0 +1,712 @@
+<workflow-app xmlns="uri:oozie:workflow:0.5" name="GOMICA::producer">
+    <global>
+        <job-tracker>${jobTracker}</job-tracker>
+        <name-node>${nameNode}</name-node>
+        <configuration>
+            <property>
+                <name>oozie.launcher.mapred.map.child.env</name>
+                <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+            </property>
+            <property>
+                <name>hadoop.security.credential.provider.path</name>
+                <value>jceks://file${PWKS_FILE}</value>
+            </property>
+            <property>
+                <name>mapred.job.queue.name</name>
+                <value>${queueName}</value>
+            </property>
+        </configuration>
+    </global>
+
+    <credentials>
+        <credential name="hcat" type="hcat">
+            <property>
+                <name>hcat.metastore.uri</name>
+                <value>${metastoreUri}</value>
+            </property>
+            <property>
+                <name>hcat.metastore.principal</name>
+                <value>${metastorePrincipal}</value>
+            </property>
+        </credential>
+        <credential name="hive2" type="hive2">
+            <property>
+                <name>hive2.server.principal</name>
+                <value>${jdbcPrincipal}</value>
+            </property>
+            <property>
+                <name>hive2.jdbc.url</name>
+                <value>${jdbcURL}</value>
+            </property>
+        </credential>
+    </credentials>
+
+    <start to="find-target-directory"/>
+
+    <action name="find-target-directory">
+        <shell xmlns="uri:oozie:shell-action:0.3">
+            <exec>find-target-raw-data-directory.sh</exec>
+            <argument>${appPreDir}</argument>
+            <file>${applicationDir}/shell/find-target-raw-data-directory.sh#find-target-raw-data-directory.sh</file>
+            <capture-output/>
+        </shell>
+        <ok to="prepare"/>
+        <error to="report-status"/>
+    </action>
+
+    <action name="prepare">
+        <fs>
+            <mkdir path="${wf:actionData('find-target-directory')['target_dir']}"/>
+        </fs>
+        <ok to="if-test"/>
+        <error to="report-status"/>
+    </action>
+
+    <decision name="if-test">
+        <switch>
+            <case to="SIMSMART_PO_AND_SE_LINE_ITEM">${testMode eq "test"}</case>
+            <case to="fork-wv-producers">${testMode eq "db"}</case>
+            <default to="fork-wv-producers"/>
+        </switch>
+    </decision>
+
+    <decision name="if-test-end">
+        <switch>
+            <case to="impala-tables-refresh">${testMode eq "test"}</case>
+            <case to="wv-producer">${testMode eq "db"}</case>
+            <default to="wv-producer"/>
+        </switch>
+    </decision>
+
+    <fork name="fork-wv-producers">
+        <path start="WVCAS-producer"/>
+        <path start="WVJOBKICK-producer"/>
+        <path start="WVJOBREPORTMUDCHK-producer"/>
+        <path start="WVTESTEQUIP-producer"/>
+        <path start="SIMSMART_PO_AND_SE_LINE_ITEM"/>
+    </fork>
+
+    <join name="wv-producer" to="impala-tables-refresh"/>
+
+    <action name="SIMSMART_PO_AND_SE_LINE_ITEM" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/${testMode}_simsmart_vw_dwep_po_and_se_line_item.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="PREPARE_EMPTY_TABLES"/>
+        <error to="report-status"/>
+    </action>
+
+    <action name="PREPARE_EMPTY_TABLES" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/${testMode}_prepare_empty_tables.hql</script>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>OUTPUT_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+        </hive2>
+        <ok to="PRODUCE_ANOMALY_PRICE_DETECTION"/>
+        <error to="report-status"/>
+    </action>
+
+    <action name="PRODUCE_ANOMALY_PRICE_DETECTION" cred="hcat,hive2">
+        <shell xmlns="uri:oozie:shell-action:0.3">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>shell/spark-submit_anomally_price.sh</exec>
+            <env-var>MAIN_CLASS=com.cvx.cdf.dwepcr.producer.priceanomalydetection.Main</env-var>
+            <env-var>TEST_MODE=${testMode}</env-var>
+            <env-var>QUEUE_NAME=${queueName}</env-var>
+            <env-var>PRINCIPAL=${principal}</env-var>
+            <env-var>KEYTAB=${keytab}</env-var>
+            <env-var>OUTPUT_PATH=${wf:actionData('find-target-directory')['target_dir']}</env-var>
+            <env-var>LAKE_DATABASE=${lakeHiveDB}</env-var>
+            <env-var>STG_DATABASE=${stageHiveDB}</env-var>
+            <env-var>STG_PATH=${appStgDir}</env-var>
+            <env-var>APPLICATION_DIR=${applicationDir}</env-var>
+            <file>${applicationDir}/shell/spark-submit_anomally_price.sh#spark-submit_anomally_price.sh</file>
+            <file>${applicationDir}/lib/producer.jar#producer.jar</file>
+            <file>${applicationDir}/hive-site.xml#hive-site.xml</file>
+            <capture-output/>
+        </shell>
+        <ok to="PRODUCE_NPT_TO_INVOICES_TABLE"/>
+        <error to="report-status"/>
+    </action>
+
+    <action name="PRODUCE_NPT_TO_INVOICES_TABLE" cred="hcat,hive2">
+        <shell xmlns="uri:oozie:shell-action:0.3">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>shell/spark-submit.sh</exec>
+            <env-var>MAIN_CLASS=com.cvx.cdf.dwepcr.producer.npttoinvoice.Main</env-var>
+            <env-var>TEST_MODE=${testMode}</env-var>
+            <env-var>QUEUE_NAME=${queueName}</env-var>
+            <env-var>PRINCIPAL=${principal}</env-var>
+            <env-var>KEYTAB=${keytab}</env-var>
+            <env-var>OUTPUT_PATH=${wf:actionData('find-target-directory')['target_dir']}</env-var>
+            <env-var>LAKE_DATABASE=${lakeHiveDB}</env-var>
+            <env-var>STG_DATABASE=${stageHiveDB}</env-var>
+            <env-var>STG_PATH=${appStgDir}</env-var>
+            <env-var>APPLICATION_DIR=${applicationDir}</env-var>
+            <file>${applicationDir}/shell/spark-submit.sh#spark-submit.sh</file>
+            <file>${applicationDir}/lib/producer.jar#producer.jar</file>
+            <file>${applicationDir}/hive-site.xml#hive-site.xml</file>
+            <capture-output/>
+        </shell>
+        <!--<ok to="impala-tables-refresh"/>-->
+        <ok to="PRODUCE_CONTRACT_ANALYZER"/>
+        <error to="report-status"/>
+    </action>
+
+    <action name="PRODUCE_CONTRACT_ANALYZER" cred="hcat,hive2">
+        <shell xmlns="uri:oozie:shell-action:0.3">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>shell/spark-submit.sh</exec>
+            <env-var>MAIN_CLASS=com.cvx.cdf.dwepcr.producer.contract.analyzer.Main</env-var>
+            <env-var>TEST_MODE=${testMode}</env-var>
+            <env-var>QUEUE_NAME=${queueName}</env-var>
+            <env-var>PRINCIPAL=${principal}</env-var>
+            <env-var>KEYTAB=${keytab}</env-var>
+            <env-var>OUTPUT_PATH=${wf:actionData('find-target-directory')['target_dir']}</env-var>
+            <env-var>LAKE_DATABASE=${lakeHiveDB}</env-var>
+            <env-var>STG_DATABASE=${stageHiveDB}</env-var>
+            <env-var>STG_PATH=${appStgDir}</env-var>
+            <env-var>APPLICATION_DIR=${applicationDir}</env-var>
+            <file>${applicationDir}/shell/spark-submit.sh#spark-submit.sh</file>
+            <file>${applicationDir}/lib/producer.jar#producer.jar</file>
+            <file>${applicationDir}/hive-site.xml#hive-site.xml</file>
+            <capture-output/>
+        </shell>
+        <ok to="if-test-end"/>
+        <error to="report-status"/>
+    </action>
+
+    <!--    <action name="HELLO_WORLD_ARUN" cred="hcat,hive2">-->
+    <!--    <shell xmlns="uri:oozie:shell-action:0.3">-->
+    <!--        <job-tracker>${jobTracker}</job-tracker>-->
+    <!--        <name-node>${nameNode}</name-node>-->
+    <!--        <exec>shell/spark-submit.sh</exec>-->
+    <!--        <env-var>MAIN_CLASS=com.cvx.cdf.dwepcr.producer.HelloWorld.HelloWorld</env-var>-->
+    <!--        <env-var>TEST_MODE=${testMode}</env-var>-->
+    <!--        <env-var>QUEUE_NAME=${queueName}</env-var>-->
+    <!--        <env-var>PRINCIPAL=${principal}</env-var>-->
+    <!--        <env-var>KEYTAB=${keytab}</env-var>-->
+    <!--        <env-var>OUTPUT_PATH=${wf:actionData('find-target-directory')['target_dir']}</env-var>-->
+    <!--        <env-var>LAKE_DATABASE=${lakeHiveDB}</env-var>-->
+    <!--        <env-var>STG_DATABASE=${stageHiveDB}</env-var>-->
+    <!--        <env-var>STG_PATH=${appStgDir}</env-var>-->
+    <!--        <env-var>APPLICATION_DIR=${applicationDir}</env-var>-->
+    <!--        <file>${applicationDir}/shell/spark-submit.sh#spark-submit.sh</file>-->
+    <!--        <file>${applicationDir}/lib/producer.jar#producer.jar</file>-->
+    <!--        <file>${applicationDir}/hive-site.xml#hive-site.xml</file>-->
+    <!--        <capture-output/>-->
+    <!--    </shell>-->
+    <!--    <ok to="if-test-end"/>-->
+    <!--    <error to="report-status"/>-->
+    <!--</action>-->
+
+
+
+    <!--<action name="PRODUCE_METADATA" cred="hcat,hive2">-->
+    <!--<shell xmlns="uri:oozie:shell-action:0.3">-->
+    <!--<job-tracker>${jobTracker}</job-tracker>-->
+    <!--<name-node>${nameNode}</name-node>-->
+    <!--<exec>shell/spark-submit.sh</exec>-->
+    <!--<env-var>MAIN_CLASS=com.cvx.cdf.dwepcr.producer.metadata.MetadataTableGenerator</env-var>-->
+    <!--<env-var>TEST_MODE=${testMode}</env-var>-->
+    <!--<env-var>QUEUE_NAME=${queueName}</env-var>-->
+    <!--<env-var>PRINCIPAL=${principal}</env-var>-->
+    <!--<env-var>KEYTAB=${keytab}</env-var>-->
+    <!--<env-var>OUTPUT_PATH=${wf:actionData('find-target-directory')['target_dir']}</env-var>-->
+    <!--<env-var>LAKE_DATABASE=${lakeHiveDB}</env-var>-->
+    <!--<env-var>STG_DATABASE=${stageHiveDB}</env-var>-->
+    <!--<env-var>STG_PATH=${appStgDir}</env-var>-->
+    <!--<env-var>APPLICATION_DIR=${applicationDir}</env-var>-->
+    <!--<file>${applicationDir}/shell/spark-submit.sh#spark-submit.sh</file>-->
+    <!--<file>${applicationDir}/lib/producer.jar#producer.jar</file>-->
+    <!--<file>${applicationDir}/hive-site.xml#hive-site.xml</file>-->
+    <!--<capture-output/>-->
+    <!--</shell>-->
+    <!--<ok to="impala-tables-refresh"/>-->
+    <!--<error to="report-status"/>-->
+    <!--</action>-->
+
+    <!-- <action name="RUN_CONTRACTS_OCR" cred="hcat,hive2">
+        <shell xmlns="uri:oozie:shell-action:0.3">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>shell/spark-submit_ocr_contracts.sh</exec>
+            <env-var>MAIN_CLASS=com.cvx.cdf.dwepcr.producer.ocr.ContractsOCRProcessor</env-var>
+            <env-var>QUEUE_NAME=${queueName}</env-var>
+            <env-var>PRINCIPAL=${principal}</env-var>
+            <env-var>KEYTAB=${keytab}</env-var>
+            <env-var>APPLICATION_DIR=${applicationDir}</env-var>
+            <env-var>CONTRACTS_SRC_DIR=${contractOcrSrcDir}</env-var>
+            <env-var>CONTRACTS_DEST_DIR=${contractOcrDestDir}</env-var>
+            <file>${applicationDir}/shell/spark-submit_ocr_contracts.sh#spark-submit_ocr_contracts.sh</file>
+            <file>${applicationDir}/lib/producer.jar#producer.jar</file>
+            <file>${applicationDir}/hive-site.xml#hive-site.xml</file>
+            <capture-output/>
+        </shell>
+        <ok to="if-test-end"/>
+        <error to="report-status"/>
+    </action> -->
+
+    <action name="WVCAS-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVCAS.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVCASCOMP-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVCASCOMP-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVCASCOMP.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBCONTACT-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBCONTACT-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBCONTACT.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBDRILLBIT-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBDRILLBIT-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBDRILLBIT.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBDRILLSTRING-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBDRILLSTRING-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBDRILLSTRING.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBDRILLSTRINGCOMP-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBDRILLSTRINGCOMP-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBDRILLSTRINGCOMP.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBDRILLSTRINGDRILLPARAM-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBDRILLSTRINGDRILLPARAM-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBDRILLSTRINGDRILLPARAM.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="wv-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBKICK-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBKICK.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBLOSTCIRC-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBLOSTCIRC-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBLOSTCIRC.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBOFFLINE-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBOFFLINE-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBOFFLINE.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBOFFLINEDATESTIMELOG-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBOFFLINEDATESTIMELOG-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBOFFLINEDATESTIMELOG.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBREPORTCONTACTS-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBREPORTCONTACTS-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTCONTACTS.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBREPORTFLUIDSWELL-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBREPORTFLUIDSWELL-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTFLUIDSWELL.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBREPORTHAZARDID-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBREPORTHAZARDID-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTHAZARDID.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="wv-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBREPORTMUDCHK-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTMUDCHK.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBREPORTMUDVOL-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBREPORTMUDVOL-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTMUDVOL.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOB-producer"/>
+        <error to="report-status"/>
+    </action>
+
+    <action name="WVJOB-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOB.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBREPORT-producer"/>
+        <error to="report-status"/>
+    </action>
+
+    <action name="WVJOBREPORT-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORT.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBREPORTOFFSHORE-producer"/>
+        <error to="report-status"/>
+    </action>
+
+
+
+    <action name="WVJOBREPORTOFFSHORE-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTOFFSHORE.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBRIGBOPCOMP-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBRIGBOPCOMP-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBRIGBOPCOMP.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBSAFETYCHK-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBSAFETYCHK-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBSAFETYCHK.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBSAFETYINCIDENT-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBSAFETYINCIDENT-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBSAFETYINCIDENT.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBSAFETYINCIDENTVICT-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBSAFETYINCIDENTVICT-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBSAFETYINCIDENTVICT.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="wv-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVTESTEQUIP-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVTESTEQUIP.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVTESTLEAKOFF-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVTESTLEAKOFF-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVTESTLEAKOFF.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVWELLBORE-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVWELLBORE-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLBORE.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBREPORTTIMELOG-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBREPORTTIMELOG-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBREPORTTIMELOG.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVJOBINTERVALPROBLEM-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVJOBINTERVALPROBLEM-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVJOBINTERVALPROBLEM.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVWELLHEADER-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVWELLHEADER-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLHEADER.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVWELLBOREDIRSURVEY-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVWELLBOREDIRSURVEY-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLBOREDIRSURVEY.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVWELLBOREDIRSURVEYDATA-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVWELLBOREDIRSURVEYDATA-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLBOREDIRSURVEYDATA.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="WVWELLBOREFORMATION-producer"/>
+        <error to="report-status"/>
+    </action>
+    <action name="WVWELLBOREFORMATION-producer" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/WVWELLBOREFORMATION.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="wv-producer"/>
+        <error to="report-status"/>
+    </action>
+
+
+    <action name="training_dataset" cred="hcat,hive2">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${applicationDir}/hive/training_dataset.hql</script>
+            <param>LOCATION_PATH=${wf:actionData('find-target-directory')['target_dir']}</param>
+            <param>DESTINATION_DB=${lakeHiveDB}</param>
+            <param>SOURCE_DB=${stageHiveDB}</param>
+        </hive2>
+        <ok to="impala-tables-refresh"/>
+        <error to="report-status"/>
+    </action>
+
+    <action name="impala-tables-refresh">
+        <shell xmlns="uri:oozie:shell-action:0.3">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>impala-refresh-all-tables.sh</exec>
+            <argument>${impalaHostInv}</argument>
+            <argument>${lakeHiveDB}</argument>
+            <argument>${sandboxName}</argument>
+            <argument>${keytab}</argument>
+            <argument>${hiveMetastorePrincipal}</argument>
+            <argument>${hiveUri}</argument>
+            <argument>${hivessl}</argument>
+            <file>${applicationDir}/shell/impala-refresh-all-tables.sh</file>
+        </shell>
+        <ok to="if-test-retention-skip"/>
+        <error to="report-status"/>
+    </action>
+
+    <decision name="if-test-retention-skip">
+        <switch>
+            <case to="report-status">${testMode eq "test"}</case>
+            <case to="retention">${testMode eq "db"}</case>
+            <default to="report-status"/>
+        </switch>
+    </decision>
+
+    <action name="retention">
+        <shell xmlns="uri:oozie:shell-action:0.3">
+            <exec>retention.sh</exec>
+            <argument>-d</argument>
+            <argument>${appPreDir}</argument>
+            <argument>-s</argument>
+            <argument>${empty wf:lastErrorNode() ? true : false}</argument>
+            <argument>-n</argument>
+            <argument>2</argument>
+            <file>${applicationDir}/shell/retention.sh</file>
+            <capture-output/>
+        </shell>
+        <ok to="report-status"/>
+        <error to="report-status"/>
+    </action>
+
+
+    <action name="report-status">
+        <sub-workflow>
+            <app-path>${reporterWorkflowDir}</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>rcpt</name>
+                    <value>${rcpt}</value>
+                </property>
+                <property>
+                    <name>wfname</name>
+                    <value>${wf:name()}</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>wfuser</name>
+                    <value>${wf:user()}</value>
+                </property>
+                <property>
+                    <name>wflastErrorNode</name>
+                    <value>${firstNotNull(wf:lastErrorNode(), "false")}</value>
+                </property>
+                <property>
+                    <name>wferrorMessage</name>
+                    <value>${firstNotNull(wf:errorMessage(wf:lastErrorNode()), "false")}</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+    <kill name="fail">
+        <message>Error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+
+    <end name="end"/>
+
+</workflow-app>

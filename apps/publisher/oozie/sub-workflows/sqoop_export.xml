@@ -1,0 +1,132 @@
+<workflow-app xmlns="uri:oozie:workflow:0.5" name="GOMICA::publisher::${tableName}">
+    <global>
+        <job-tracker>${jobTracker}</job-tracker>
+        <name-node>${nameNode}</name-node>
+        <configuration>
+            <property>
+                <name>oozie.launcher.mapred.map.child.env</name>
+                <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+            </property>
+            <property>
+                <name>hadoop.security.credential.provider.path</name>
+                <value>jceks://file${PWKS_FILE}</value>
+            </property>
+            <property>
+                <name>mapred.job.queue.name</name>
+                <value>${queueName}</value>
+            </property>
+        </configuration>
+    </global>
+
+    <credentials>
+        <credential name="hcat" type="hcat">
+            <property>
+                <name>hcat.metastore.uri</name>
+                <value>${metastoreUri}</value>
+            </property>
+            <property>
+                <name>hcat.metastore.principal</name>
+                <value>${metastorePrincipal}</value>
+            </property>
+        </credential>
+        <credential name="hive2" type="hive2">
+            <property>
+                <name>hive2.server.principal</name>
+                <value>${jdbcPrincipal}</value>
+            </property>
+            <property>
+                <name>hive2.jdbc.url</name>
+                <value>${jdbcURL}</value>
+            </property>
+        </credential>
+    </credentials>
+
+    <start to="truncate"/>
+
+    <action name="truncate" cred="hcat,hive2">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapred.map.child.env</name>
+                    <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+                </property>
+                <property>
+                    <name>hadoop.security.credential.provider.path</name>
+                    <value>jceks://file${PWKS_FILE}</value>
+                </property>
+            </configuration>
+
+            <arg>eval</arg>
+            <arg>-libjars</arg>
+            <arg>${applicationDir}/lib/sqljdbc4.jar</arg>
+            <arg>--connect</arg>
+            <arg>${jdbcConnection}</arg>
+            <arg>--username</arg>
+            <arg>${jdbcUsername}</arg>
+            <arg>--password-alias</arg>
+            <arg>${jdbcPassAlias}</arg>
+            <arg>--query</arg>
+            <arg>TRUNCATE TABLE ${schema}.${tableName}</arg>
+            <file>${applicationDir}/hive-site.xml</file>
+        </sqoop>
+
+        <ok to="export"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="export" cred="hcat,hive2">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+
+            <configuration>
+                <property>
+                    <name>oozie.launcher.mapred.map.child.env</name>
+                    <value>HADOOP_CREDSTORE_PASSWORD=`cat ${PWKS_KEY}`</value>
+                </property>
+                <property>
+                    <name>hadoop.security.credential.provider.path</name>
+                    <value>jceks://file${PWKS_FILE}</value>
+                </property>
+            </configuration>
+
+            <arg>export</arg>
+            <arg>-libjars</arg>
+            <arg>${applicationDir}/lib/sqljdbc4.jar</arg>
+            <arg>--connect</arg>
+            <arg>${jdbcConnection}</arg>
+            <arg>--username</arg>
+            <arg>${jdbcUsername}</arg>
+            <arg>--password-alias</arg>
+            <arg>${jdbcPassAlias}</arg>
+
+            <arg>--table</arg>
+            <arg>${tableName}</arg>
+            <arg>--hcatalog-database</arg>
+            <arg>${lakeHiveDB}</arg>
+            <arg>--hcatalog-table</arg>
+            <arg>${tableName}</arg>
+            <arg>-m</arg>
+            <arg>${mappers}</arg>
+
+            <arg>--</arg>
+            <arg>--schema</arg>
+            <arg>${schema}</arg>
+            <file>${applicationDir}/hive-site.xml</file>
+        </sqoop>
+
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+
+
+    <kill name="fail">
+        <message>Error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+
+    <end name="end"/>
+
+</workflow-app>

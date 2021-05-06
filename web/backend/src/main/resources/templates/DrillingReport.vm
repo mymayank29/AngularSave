@@ -1,0 +1,492 @@
+<html>
+<head>
+    <!--<link rel="stylesheet" type="text/css" href="sample.css">-->
+    <style>
+    body {
+
+    }
+
+    * {
+    margin: 0;
+    padding: 0;
+    border-spacing: 0px;
+    }
+
+    .header{
+        font-weight: bold;
+    	width: 100%;
+    }
+
+    .header .logo{
+    	float: left;
+    	border: 0px solid black;
+    	height: 100px;
+    	width: 90px;
+    }
+
+    .header .logo img{
+    	height:95%;
+    	width:95%;
+    }
+
+    .header .title{
+    	float: center;
+    	text-align: center;
+    	border: 0px solid black;
+    }
+
+    .page {
+    	border: 1px solid black;
+    }
+
+    td {
+    	border: 1px solid black;
+    }
+
+    .page {
+    	table-layout: fixed;
+    	width: 100%;
+    	padding: 3px;
+    }
+
+    .header {
+    	border: 0px solid black;
+    	border-spacing: 0px;
+    	padding: 0px;
+    	margin: 0px;
+    }
+
+    .leftSide, .rightSide {
+    	border: 1px solid black;
+    	border-spacing: 0px;
+    	padding: 0px;
+    	margin: 0px;
+    }
+
+    tbody {
+    	border-spacing: 0px;
+    }
+
+    .leftSide {
+    	table-layout: fixed;
+    	width: 70%;
+    	float: left;
+    }
+
+    .rightSide {
+    	table-layout: fixed;
+    	width: 29%;
+    	float: right;
+    }
+
+    .tableTitle {
+    	background-color:LightGray;
+    	width: 100%;
+    	font-size: 20px;
+    	font-weight: bold;
+    }
+
+    .blueCell {
+    	background-color:#00FFFF;
+    }
+
+    .yellowCell {
+    	background-color:#FFFF00;
+    }
+
+    .greenCell {
+    	background-color:#90EE90;
+    }
+
+
+    .deatilTable .title{
+    	background-color:LightGray;
+    	 text-align: center;
+    }
+
+
+    .leftSide table{
+    	table-layout: fixed;
+    	width: 100%;
+    }
+
+    .leftSide table td{
+    	table-layout: auto;
+    }
+
+    .rightSide table{
+    	table-layout: fixed;
+    	width: 100%;
+    }
+
+    .rightSide table td{
+    	table-layout: auto;
+    }
+
+    .detail, .detail table td, .detail table{
+    	float: right;
+    	border: 0px solid black;
+    	width: 100%;
+
+    }
+
+    .detail{
+    	width: 50%;
+    }
+    </style>
+</head>
+<body>
+
+#foreach ($drillingReport in $drillingReportList)
+<div class="page">
+    <table class=header>
+        <tr>
+            <td class=logo>
+                <img src="data:image/jpg;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA9CAMAAADRXGosAAADAFBMVEX///8JotybGzMAS6EmW6lH
+                c7bSHjXROUUAQ50FnNgCmNUTdLvb4/GzHzaWFS6Tp9Ly9PrbKjSjHTbRIDavOEkbp+AKlNIAO5m7
+                xuLEIDapP0+XJTa5b3hIqNwEj86lttreLzTV2uw2Za7JLTO8IDb42tgSo91nrd0ao9325uS5HzbB
+                y+UwkM3L0ugRk9GpEy0TfMEMgsXDLTTXp6pyuOLICiOEm8yICiPFRFHuo6J6k8i2FC2ixubt8fgA
+                XKy0KjTYIjUNntqqJTScOknZtLa8LDSNFCvJJClqicKFwOYSi8yIw+jMHTKiJTXJIDYAndnMIDYA
+                ltUtYa0BdL0VbLbAHzbq7fYSgcUAZLLmaXbNEynUIDYPfsPQKjQ9aLHh4/EDgcUKhcdyjsVUerq1
+                IDb4+fwFjc0AfcOuHzWoHjVHh8VZfLvt2tkAktEQUqTMHSnC2vABhchDbbNjg7/jcnaAqtYTeL4N
+                js4aVaYWYa4AabUUmNW0wt/DaHAPdbydsde1Iy4ioduTDSkBkNDAFi0Nh8kAltIMmNUHiMrRJDQf
+                XqywvNwRhskSZbDSbXPstLQBUaVIks309/sufcHPLzQIjs0oa7Pj6PPda2v89fQSb7gwXqzZcnfJ
+                aGj8/foFYrAHkdAAjc0LicoSkM/z4N6Es9wAmdcFlNIAiszjZG3xqar+/v9ooNO9eYGtKDX8+PYM
+                arQhp+D9/f5PdrgWnNi82/LMDyYMer/S4PH//f7RJzP++/rXrrAKi8wVWqrko5+uGTBMntXUJjUB
+                icr6+/0Pissantrl7/mMoM8Ak9PKIjTOIjKPGzD8/P38/v8AMJP//v8Hmteu0e4EldPDEScFe78B
+                WKkEjMwXUaRefr3dvL3///v39/vlgoW7ECgrcriiFi5qlsvQIzMamdbYKDQOcLmvIivyrrB+CCCj
+                M0Dt4ODPIzRbksu4EhvLBR/5ycr309AWcLi6NkMGi8sRV6r17+0fV6j+/v78+v1Dfr8XabTorq4L
+                V6lPq98bZK/doaRSfnJIAAAJ10lEQVR42pWXCVSTxxbHb/IlJCxpIktA9j0CgpFFhIZWW0FEBbUG
+                hPbwCiLggrbFDR5d1D7XKhFQfBBtVZBKXNq0CAhFKQgoS6gJe4LsRVMiq4YtvPmCVu1ynr3nJOdb
+                5jf3f+fOnZmPAABW4TyI+xCCiGJ4XSMAw/HeDJmure03Gbb4tTGQRlKxZnJmvBWJSodNQvyRgJFS
+                +EobQTmAkMEQzN7VSusBy61Q7Ti8ijfF3vL2OFOsKZ4QNG7nUWTRXba+g4NW6zS3H2ic/HWgRLil
+                3Wps9JHVuvZdHl9etIRI6t4kvI9/ZfJ4GGYYL3V+gn1ibRhvRDKkw+cikkU49Ql1nROJ+mQvlaRj
+                hKRhGJWOuYrNh39BGNt8+xb2/LJw6Zz11z7TlwTtcCuLnd+47EFLPTF0OC9YGnSgjUpyUCbdbIsu
+                IX6LeYseW8xiP/74w7sVAWlv1FfeZmekt2qs/qVCwQupXt9TJgwflk2JHq2t6RnP21qf7f6QQBTB
+                qtu/x84HUAF0rfg6/b1po52mc1cpLjiXwzswVD6UAtCMN9FSNyQOTZ7CjulYWanvogDcueTrM/Iw
+                7VKvmFP3TsUtC8Of31xKv+gTnACS5/0TL7iR+7qZ4pS6zWQ06nSfxdtgTcC4zpUwtj6ZRN6Uuaur
+                gA4XiuGMC20NXDxGPjYAJPoolrHH9cFtYsp4f+bYcOlAN0lPq2Vgg7KxL2WiNtbA98vBk8wH6aM5
+                tadFu6uHeId7MffhR8N7pomw3XuXzSZ9wuKjJD3wXle9KDNvM2MnU1kKX1eTqk+CZ2v7agDbPPdN
+                jM0lbs4kZTocqMkGnxT4x1YejDEzShRfRQpeG6l3LJs7fBkzlm+Zc16s0FK+FsQgfW9yZ7hhA8Hd
+                rMDflJk6xyBpw+D/Y76NcQicAL/++12YMT3BSVXjHeL2haZDxqL8v6+UgI4ivVuTEvuPLkrWRSAs
+                WL4zlJapwaWZnFndl6FZ9xeMktNh2akneLA+8aejqntax3sw40MkufAtXg61c9qd0sI8G9WXwf/y
+                Fabwu0W6iRaSjgGr1Gvxyvr60h56NWa8siUqiRCaZ0LsMOG0jVrd03mDpZkQnPMcSh+6qufTYq41
+                QWmRFSzP/bzw66CgxiUEd6+zScAL0copND01Tcm2b7EBFpjK+LonAwEqtbnkXRQweQDd0nr7Vic0
+                Kf2ox2HHIGZsthJW33xPi0N/+ICSvYDAztnKsJ/K+45eG5BaTbIcs3onj9kjldd8RCMyxHLW3MqW
+                DIM2HYSdXTzp1WVgTSyFy6D/fv/VZC9Zt3lf2C3GVI+PsSvlPea5dYfCXLbYrtAz1SCLCazLMl03
+                EjCBB8d1FynKpGBPllTGwCX45iH905+h/yAUAPj5cgsdP3b7QfmkYhR2V9tKbVvtGYAZzzt0wcgZ
+                6GUt8IQsaQtu87sWvoyezimVydRDIpMpbW71GAxh+e8fCmsl97Z3+5v/OhdhB/a9OT6v8+nk0wZ2
+                lGh45q7rh1MsFkX2ewJkMhtIPlKys9NrSeL1MKJhjY7GEhKYfyIx19MQDdbbs5gxv1k0P20CO2Hg
+                K5m7CYCvvPvFUh233SGhQEYiPbtrY1VVvU7LLsQpHktVCl0wmNFTyB1Ne3Ciiv/CKV9Y5WYQvmdP
+                vJEFZvyWNpEp+tXUp76i3nlNWBEolKm5yqeaIyN0R1NTx4QXPv1kwBd2JSxZMhWAKmCnWUoLEOw9
+                xhc3w39Xx3YX5QzwIYqPVqM5xBYIvPmnCeo3zKghZDfYFW549PGVBIK9C7b1WmP+algJRewoUIPQ
+                BnYO8DLqF4L2hEaspL++hH3FfcT3ku8PElGn5cBG7HHltLnZIiMh8HOVWlqav1VypJwetUg/m8T5
+                TpH9Nncw5aPe1r3EbbGfGKvO71u6qogk1mB7TigfTptHFhWnCvmBCJ1UdExxTCmJQU1Duf3zciRV
+                SuxxgpWfvDc/i+jgbFGn0uP53oHzA6pwy7o3Kh037oxKChTyhUozfV1TTULF0QsfSX66pLxukIW5
+                PrlCk3iel/faFfl3OKuOCIN5G5aV5jfOWdjEGheyt+kXFWtR5zGZwfuzdij2Xuo6Z3YwpukuRo5I
+                sYkM7JVsjJXz7Yq2pkX0DFmGblwaeb1ygnxjkd1M4hpYvqC/Rt9HsefSWdg2/eNMZX7MNcw5v4Z5
+                nKLcwBqQHG6Q86P3bWXPKxwKbkZqG41dxhaMTy6fn2Ozz3rNWcjqjPpGbj1xYumdRkIooRCaz72T
+                1czMPcmKbkO7bVZTpnxp1908vx6lDPQd9atDpjkAWckB6Yov4KtRlIRlEhwrsBRd9IRkW1BdFVhf
+                TUOrbsKgJudoa2xEWNJk7SHEONzfv6vOEsAVMWhZ1NEhoQtE4YmUg94JWHFwoUX/0zIQpCygQ8K5
+                k67w1CF6JuqO8F04TACU6ssMgClA3k6ek4AnQDId9GACMNYezbS3+8di1HPiemI0LXgF/AftHvC+
+                +jyCQKjzRt5eoXaktcTl6dy96FbsYn+EFz3QHgQpDyHKUAO8pxCAo8glIGyh5CUKQBtW1jV0m/xb
+                +Flbu2/Ep2+iRig6EVTgRLbaa5A5EokhZ8lAn6XSEIavy6z+3AjYd5qE9vJqUJMiAA0Ab1yktSYh
+                lGkHzykkEbTrwHWsy5HWCyYCLlqCfNSngFkUkQj1hqZphCk8XwSmDWBS7FjARfsdFxUIFwS0l0m1
+                WtCYM00ymXyJAsPbY9hjGlro8B9ueAdl4KMCoge+jQJnTC0X825kJQNVLVGrrI9heO1nW3CydbKV
+                olYUkVPBBHBFE+zbPZblloQZE5Mq6OqaDGsl4l3S8T+73oYxj7NexCM3btw40tvr7+8PQENuacDl
+                gj9yWQZEItHDQy2CpP6nWcBluYaIU77x03Zr1AsHhrI+QG1xpSMCPEz8ugzwOD1VeNrPcFN/ZqGL
+                GciGkIqJheXf3/Ky5uB9DYk/ABN4FuMICpIroI3gIzT18D7SK9y68isSnnychJDbiLRqekbCAjS0
+                s+QIPjzcAq8tcLqoEQva3el+oKAqvLypoWG+i7NLzpjbb7l1J1bt9vmGClTqYGfx+RFDQ1dbKYUi
+                pUwc/MX4c2ZArRk+N2Fb8+a4+UMrv2DM+kQzXK3WqCOI/pJawfo2u6tx8W8lRM5OaWTnVoVtPo29
+                IH+Pc6GjM3otbl+7vG3fWsQcXfvsZP7crr85KEZk0yjjlTg9ktCZMeIwuMXF//Ssml7B1NX1PSKh
+                6jkJ2SFo3jv1rdjOJxi8YP6IISvyDtp8+khi1Sgw8MLCa8uVH+dycO0fPx/+bGOVH7IQCXAfQPfY
+                fsemv/rq+EtzSEUkmKXtz/7gHx4aHYrdtv3ty/8BsVkmm3HmY64AAAAASUVORK5CYII=" id="photo-id"/>
+            </td>
+            <td class=title>
+            <h3>
+                Drilling Activity Report</br>
+                Rig / Unit: Deepwater Conqueror</br>
+                ##{wellname table}</br>
+            </h3>
+            </td>
+            <td class=detail>
+                <table>
+                    <tr>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>Report Date : $!drillingReport.wvjobreport.dttmstart
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>Rpt : $!drillingReport.wvjobreport.reportnocalc</td>
+                                    <td>DFS : $!drillingReport.wvjobreport.durationtimelogcumspudcalc</td>
+                                    <td>DOL : $!drillingReport.wvjobreport.durationtimelogtotcumcalc</td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>Depth Progress : $!drillingReport.wvjobreport.depthprogressdpcalc
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <div class=tables>
+            <div class="leftSide">
+                <table class=deatilTable>
+                <tr>
+                <td>
+                <table>
+                <tr>
+                <td class=blueCell>Well Name:</p>$!drillingReport.wellheader.wellname</td>
+                <td class=blueCell>Legal Well Name:</p>$!drillingReport.wellheader.wellidd</td>
+                <td class=blueCell>Lease:</p>$!drillingReport.wellheader.lease</td>
+                <td class=blueCell>Field Name:</p>$!drillingReport.wellheader.fieldname</td>
+                </tr>
+                </table>
+
+                </td></tr>
+                <tr><td>
+                <table>
+                <tr>
+                <td class=blueCell>Business Unit:</p>$!drillingReport.wellheader.division</td>
+                <td class=blueCell>State/Province:</p>$!drillingReport.wellheader.stateprov</td>
+                <td class=blueCell>UWI:</p>$!drillingReport.wellheader.wellida</td>
+                <td class=blueCell>ChevNo:</p>$!drillingReport.wellheader.wellidc</td>
+                </tr>
+                </table>
+
+                </td></tr>
+                <tr><td>
+                <table>
+                <tr>
+                <td class=blueCell>Current RKB:</p>$!drillingReport.wellheader.elvorigkb</td>
+                <td class=blueCell>Water Depth (ft):</p>$!drillingReport.wellheader.waterdepth</td>
+                <td class=greenCell>Curr. KB to Mud Line (ft):</p>$!drillingReport.wellheader.kbtomudcalc</td>
+                <td class=greenCell>Curr. KB to Csg Flange (ft):</p>$!drillingReport.wellheader.kbtocascalc</td>
+                <td class=greenCell>Curr. KB to Tubing Head (ft):</p>$!drillingReport.wellheader.kbtotubcalc</td>
+                </tr>
+                </table>
+
+                </td>
+                </tr>
+                </table>
+
+                <table class=deatilTable>
+                    <tr>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td class=blueCell>Primary Wellbore Affected:</p>$!drillingReport.wvwellbore.des
+                                    </td>
+                                    <td class=blueCell>Directional Typ:</p>$!drillingReport.wvwellbore.profiletyp
+                                    </td>
+                                    <td class=blueCell>Wellbore UWI:</p>$!drillingReport.wvwellbore.wellboreida
+                                    </td>
+                                    <td class=blueCell>Wellbore ChevNo:</p>$!drillingReport.wvwellbore.wellboreidb
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table class=deatilTable>
+                    <tr>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td class=blueCell>Job Category:</p>$!drillingReport.wvjob.wvtyp
+                                    </td>
+                                    <td class=blueCell>Primary Job Typ:</p>$!drillingReport.wvjob.jobtyp
+                                    </td>
+                                    <td class=blueCell>Actual Start Dt:</p>$!drillingReport.wvjob.dttmstart
+                                    </td>
+                                    <td class=blueCell>Actual End Date:</p>$!drillingReport.wvjob.dttmend
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table class=deatilTable>
+                    <tr class=tableTitle>
+                        <td colspan=5>Safety/Inspections</td>
+                    </tr>
+                    <tr class=title>
+                        <td>Des</td>
+                        <td>Safety Check</td>
+                        <td>Inspected By</td>
+                        <td>Result</td>
+                        <td>Com</td>
+                    </tr>
+                   #foreach ($record in $drillingReport.jobsafetychkDtoList)
+                       <tr>
+                           <td>$!record.des</td>
+                           <td>$!record.typ</td>
+                           <td>$!record.inspector</td>
+                           <td>$!record.result</td>
+                           <td>$!record.com</td>
+                       </tr>
+                   #end
+                </table>
+
+
+<table class=deatilTable>
+<tr>
+<td><div class=tableTitle>Daily Operations</div>
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=yellowCell>Evacuation Time:</p>$!drillingReport.wvjobreport.rpttmactops		</td>
+<td class=yellowCell>Incidents Rep?:</p>$!drillingReport.wvjobreport.usertxt1		</td>
+<td class=yellowCell>Days Since Rec. (days):</p>$!drillingReport.wvjobreport.durationsincerptinc		</td>
+<td class=yellowCell>Days Since LTI (days):</p>$!drillingReport.wvjobreport.durationsinceltinc		</td>
+</tr>
+</table>
+
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=defoultCell>Rig Time (hr):</p>$!drillingReport.wvjobreport.rigtime		</td>
+<td class=greenCell>Cum Rig Time (days):</p>$!drillingReport.wvjobreport.rigtimecumcalc		</td>
+<td class=greenCell>Rotating Hours (hr):</p>$!drillingReport.wvjobreport.tmrotatingcalc		</td>
+<td class=greenCell>Head Count:</p>$!drillingReport.wvjobreport.headcountcalc		</td>
+<td class=greenCell>Pers Tot Hrs (hr):</p>$!drillingReport.wvjobreport.durationpersonneltotcalc		</td>
+</tr>
+</table>
+
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=yellowCell>Summary:</p>$!drillingReport.wvjobreport.summaryops		</td>
+</tr>
+</table>
+
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=defoultCell>Rpt Time Status:</p>$!drillingReport.wvjobreport.statusend		</td>
+</tr>
+</table>
+
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=defoultCell>Projected Ops:</p>$!drillingReport.wvjobreport.plannextrptops		</td>
+</tr>
+</table>
+
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=defoultCell>Comments:</p>$!drillingReport.wvjobreport.remarks		</td>
+</tr>
+</table>
+
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=defoultCell>Bk Gas Avg:</p>$!drillingReport.wvjobreport.gasbackgroundavg		</td>
+<td class=defoultCell>Conn Gas Avg:</p>$!drillingReport.wvjobreport.gasconnectionavg		</td>
+<td class=defoultCell>Drill Gas Avg:</p>$!drillingReport.wvjobreport.gasdrillavg		</td>
+<td class=defoultCell>Trip Gas Avg:</p>$!drillingReport.wvjobreport.gastripavg		</td>
+</tr>
+</table>
+
+</td>
+</tr>
+</table>
+
+
+<table class=deatilTable><tr class=tableTitle><td colspan=7>Time Log</td></tr><tr class=title><td>Start Time</td><td>Dur (hr)</td><td>Phase</td><td>Activity</td><td>Com</td><td>UE Ref No.</td><td>UE Time (hr)</td></tr>
+#foreach ($record in $drillingReport.wvjobreporttimelog)
+<tr>
+<td class=greenCell>$!record.dttmstartcalc</td>
+<td class=blueCell>$!record.durationnoprobtimecalc</td>
+<td class=greenCell>$!record.phase</td>
+<td class=blueCell>$!record.code1</td>
+<td class=defoultCell>$!record.com</td>
+<td class=greenCell>$!record.refnoproblemcalc</td>
+<td class=greenCell>$!record.durationproblemtimecalc</td></tr>
+#end
+</table>
+
+<table class=deatilTable>
+<tr>
+<td><div class=tableTitle>Unscheduled Events</div>
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=defoultCell>Unscheduled Event #:</p>$!drillingReport.wvjobintervalproblem.refno		</td>
+</tr>
+</table>
+
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=blueCell>Event Type:</p>$!drillingReport.wvjobintervalproblem.status		</td>
+<td class=blueCell>Unsch Maj Cat:</p>$!drillingReport.wvjobintervalproblem.typ		</td>
+<td class=blueCell>Unsch Detail:</p>$!drillingReport.wvjobintervalproblem.typdetail		</td>
+<td class=blueCell>Start Date:</p>$!drillingReport.wvjobintervalproblem.dttmstartdate		</td>
+<td class=yellowCell>Start Depth (ftOTH):</p>$!drillingReport.wvjobintervalproblem.depthstart		</td>
+</tr>
+</table>
+
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=blueCell>Accountable Party:</p>$!drillingReport.wvjobintervalproblem.accountablepty		</td>
+<td class=blueCell>End Date:</p>$!drillingReport.wvjobintervalproblem.dttmenddate		</td>
+<td class=yellowCell>End Depth (MD) (ftOTH):</p>$!drillingReport.wvjobintervalproblem.depthend		</td>
+<td class=greenCell>Dur (Net) (hr):</p>$!drillingReport.wvjobintervalproblem.durationnetcalc		</td>
+<td class=blueCell>Est Cost (Cost):</p>$!drillingReport.wvjobintervalproblem.estcostoverride		</td>
+</tr>
+</table>
+
+</td></tr>
+<tr><td>
+<table>
+<tr>
+<td class=yellowCell>Description:</p>$!drillingReport.wvjobintervalproblem.des		</td>
+</tr>
+</table>
+
+</td>
+</tr>
+</table>
+
+    </div>
+</div>
+<div>
+<p></p>
+</div>
+#end
+</body>
+</html>

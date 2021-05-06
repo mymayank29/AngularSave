@@ -1,0 +1,97 @@
+<div class="invoice-table" [class.fullscreen]="fullscreen">
+  <mat-card>
+    <mat-toolbar>
+      <p >Line Items for invoices
+        <!--comment as part of ticket 1674-->
+        <!-- <span *ngFor="let item of invoicesIds; let i = index">
+            <b >{{item}}</b>
+            <b class="ariba-id_divider"
+              *ngIf="invoicesIds.length !== i+1">,</b> -->
+              <!-- below one line already commented-->
+            <!-- <b class="ariba-id_divider" *ngIf="invoicesIds.length == i + 1">;</b> -->
+        <!-- </span> -->
+      </p>
+      <span class="spacer"></span>
+        <mat-icon *ngIf="!fullscreen"
+        svgIcon="expand"
+        matTooltip="Expand table to fullscreen"
+        matTooltipPosition="above"
+        (click)="expand()"
+        class="invoice-table__icon">
+      </mat-icon>
+      <mat-icon *ngIf="fullscreen"
+        svgIcon="unexpand"
+        matTooltip="Fullscreen exit"
+        matTooltipPosition="above"
+        (click)="expand()"
+        class="invoice-table__icon">
+      </mat-icon>
+    </mat-toolbar>
+    <div class="container" [class.container-full]="fullscreen" *ngIf="!loading; else load">
+      <mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8" *ngIf = "nullMessage == 'Data present'; else Nodata">
+
+          <ng-container matColumnDef="invoice_no">
+              <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right mat-column-border-left">{{dbToUiMatches.invoice_no}}</mat-header-cell>
+              <mat-cell *matCellDef="let element" class="mat-column-border-right mat-column-border-left">{{element.invoice_no}}</mat-cell>
+            </ng-container>
+
+        <ng-container matColumnDef="part_number">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right mat-column-border-left">{{dbToUiMatches.part_number}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right mat-column-border-left">{{element.part_number}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.description}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.description}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="unit_price_llf">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.unit_price_llf}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.unit_price_llf | currency}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="quantity_llf">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.quantity_llf}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.quantity_llf}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="discount">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.discount}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.discount}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="invoice_net_amount_usd">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.invoice_net_amount_usd}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.invoice_net_amount_usd | currency}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="start_date">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.start_date}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.start_date}}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="end_date">
+            <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.end_date}}</mat-header-cell>
+            <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.end_date}}</mat-cell>
+          </ng-container>
+
+        <ng-container matColumnDef="duration">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.duration}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.duration}}</mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+      <ng-template #Nodata>
+        {{nullMessage}}
+      </ng-template>
+    </div>
+    <ng-template #load>
+        <br>
+          <p class="animate">Loading Data...</p>
+        <app-loader [strokeWidth]="2.5" [height]="200" [width]="200" [cx]="50" [cy]="50" [r]="15"></app-loader>
+      </ng-template>
+  </mat-card>
+</div>

@@ -1,0 +1,164 @@
+<div class="invoice-table" [class.fullscreen]="fullscreen">
+  <mat-card>
+  <!-- <app-navigation></app-navigation> -->
+    <mat-toolbar>
+      <span>SCM to Supplier Report</span>
+      <span class="spacer"></span>
+          <button mat-raised-button
+            matTooltip="Change status to NPT Out of Scope"
+            matTooltipPosition="above"
+            (click)="updateFlaggedInvoices()"
+            class="invoice-table__button">NPT Out of Scope</button>
+        
+          <button mat-raised-button
+            matTooltip="Get drilling report for selected rows"
+            matTooltipPosition="above"
+            (click)="getDrillingReports()"
+            class="invoice-table__button">Drilling Report</button>
+
+            <button mat-raised-button
+            class="invoice-table__button"
+            matTooltip="Update Invoice Status to 'Supplier Review' & Export Supplier Report Data to Excel"
+            [matTooltipPosition]="'above'"
+            (click)="exportToExcel()">Submit</button>
+      <!-- <mat-icon *ngIf="!fullscreen"
+              svgIcon="expand"
+              matTooltip="Expand table to fullscreen"
+              matTooltipPosition="above"
+              (click)="expand()"
+              class="invoice-table__icon">
+    </mat-icon>
+    <mat-icon *ngIf="fullscreen"
+              svgIcon="unexpand"
+              matTooltip="Fullscreen exit"
+              matTooltipPosition="above"
+              (click)="expand()"
+              class="invoice-table__icon">
+    </mat-icon> -->
+    </mat-toolbar>
+    <div  [className]="(nullMessage == 'Data present') ? container : containerNull"  [class.container-full]="fullscreen" *ngIf="!loading && loaded; else load">
+        <mat-table [dataSource]="dataSource" *ngIf = "nullMessage == 'Data present'; else Nodata" >
+
+            <!-- <ng-container matColumnDef="wellname">
+              <th mat-header-cell *matHeaderCellDef>{{dbToUiMatches.wellname}}</th>
+              <td mat-cell *matCellDef="let data; let i = index"
+                  [attr.rowspan]="getRowSpan('wellname', i)"
+                  [style.display]="getRowSpan('wellname', i) ? '' : 'none'"> {{data.wellname}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="parent_vendor">
+              <th mat-header-cell *matHeaderCellDef>{{dbToUiMatches.parent_vendor}}</th>
+              <td mat-cell *matCellDef="let data; let i = index"
+                  [attr.rowspan]="getRowSpan('parent_vendor', i)"
+                  [style.display]="getRowSpan('parent_vendor', i) ? '' : 'none'"> {{data.parent_vendor}} </td>
+            </ng-container> -->
+
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="select">
+            <th mat-header-cell style = "width: 3%" *matHeaderCellDef >
+              <mat-checkbox color = "primary" (change)="$event ? masterToggle() : null"
+                            [checked]="selection.hasValue() && isAllSelected()"
+                            [indeterminate]="selection.hasValue() && !isAllSelected()">
+              </mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let row">
+                <mat-checkbox color = "primary" (click) = "$event.stopPropagation()"
+                (change)="$event ? onRowClicked(row) : null"
+                [checked] = "selectedRows.has(row)">
+                </mat-checkbox>
+              <!-- <mat-checkbox color = "primary" (click)="$event.stopPropagation()"
+              (change)="$event ? onRowClicked(row) : null"
+              [checked]="selection.isSelected(row)"> 
+              </mat-checkbox> -->
+            </td>
+             </ng-container>
+           <!-- Position Column -->
+           <!-- contract_owner_name -->
+           <ng-container matColumnDef="contract_owner_name">
+            <th mat-header-cell style = "width: 7%" *matHeaderCellDef>{{dbToUiMatches.contract_owner_name}}</th>
+            <td mat-cell *matCellDef="let data"> {{data.contract_owner_name}} </td>
+          </ng-container>
+
+            <ng-container matColumnDef="wellname">
+              <th mat-header-cell style = "width: 10%" *matHeaderCellDef>{{dbToUiMatches.wellname}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.wellname}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="parent_vendor">
+              <th mat-header-cell style = "width: 10%" *matHeaderCellDef>{{dbToUiMatches.parent_vendor}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.parent_vendor}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="npt_ref_no">
+              <th mat-header-cell style = "width: 5%" *matHeaderCellDef>{{dbToUiMatches.npt_ref_no}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.npt_ref_no}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="rig_no">
+              <th mat-header-cell style = "width: 5%" *matHeaderCellDef>{{dbToUiMatches.rig_no}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.rig_no}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="npt_duration">
+                <th mat-header-cell style = "width: 5%" *matHeaderCellDef>{{dbToUiMatches.npt_duration}}</th>
+                <td mat-cell *matCellDef="let data"> {{data.npt_duration}} </td>
+              </ng-container>
+
+            <ng-container matColumnDef="servicetyp">
+              <th mat-header-cell  style = "width: 10%" *matHeaderCellDef>{{dbToUiMatches.servicetyp}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.servicetyp}} </td>
+            </ng-container>
+
+            <!-- <ng-container matColumnDef="id">
+              <th mat-header-cell style = "width: 8%" *matHeaderCellDef>{{dbToUiMatches.id}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.id}} </td>
+            </ng-container> -->
+
+            <ng-container matColumnDef="npt_desc">
+              <th mat-header-cell style = "width: 22%"  *matHeaderCellDef>{{dbToUiMatches.npt_desc}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.npt_desc}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="days_since_npt">
+                <th mat-header-cell style = "width: 5%" *matHeaderCellDef>{{dbToUiMatches.days_since_npt}}</th>
+                <td mat-cell *matCellDef="let data"> {{data.days_since_npt}} </td>
+            </ng-container>
+
+              
+            <ng-container matColumnDef="pt_spent_leakage_npt">
+              <th mat-header-cell style = "width: 8%" *matHeaderCellDef>{{dbToUiMatches.pt_spent_leakage_npt}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.pt_spent_leakage_npt | currency}} </td>
+            </ng-container>
+
+            <!-- <ng-container matColumnDef="submit_date">
+              <th mat-header-cell style = "width: 10%" *matHeaderCellDef>{{dbToUiMatches.submit_date}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.submit_date }} </td>
+            </ng-container> -->
+            <ng-container matColumnDef="modified_by">
+              <th mat-header-cell style = "width: 12%" *matHeaderCellDef>{{dbToUiMatches.modified_by}}</th>
+              <td mat-cell *matCellDef="let data"> {{data.modified_by}} - {{data.modified_date}} </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="onRowClicked(row)" [ngClass]="setSelectedRow(row)"></tr>
+        </mat-table>
+          <ng-template #Nodata>
+            {{nullMessage}}
+          </ng-template>
+      </div>
+      <ng-template #load>
+        <br>
+          <p class="animate">Loading Data...</p>
+        <app-loader [strokeWidth]="2.5" [height]="200" [width]="200" [cx]="50" [cy]="50" [r]="15"></app-loader>
+      </ng-template>
+    <!-- <mat-toolbar class="report">
+      <span class="spacer"></span>
+       <h4>Prepare Report:</h4>
+      <button class="invoice-table__button blue"
+              mat-stroked-button
+              matTooltip="Export data to Excel report"
+              [matTooltipPosition]="'above'"
+              (click)="exportToExcel()">Submit</button> 
+    </mat-toolbar> -->
+  </mat-card>
+</div>

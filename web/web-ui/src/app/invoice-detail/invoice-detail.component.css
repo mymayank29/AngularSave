@@ -1,0 +1,114 @@
+a {
+    padding: 10px;
+    text-decoration: none;
+}
+
+
+.invoice-details {
+  flex-direction: column;
+  box-sizing: border-box;
+  display: flex;
+}
+.invoice-details-row {
+  flex-direction: row;
+  box-sizing: border-box;
+  display: flex;
+  place-content: stretch flex-start;
+  align-items: stretch;
+  flex: 1 100%;
+}
+.invoice-details-tables{
+  flex-direction: column;
+  box-sizing: border-box;
+  display: block;
+  flex: 1 100%;
+  /* max-width: 81%; */
+  max-width: 100%
+}
+.invoice-table__button {
+  background: #e21836;
+  border: none;
+  color: #ffffff;
+  padding: 7px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  line-height: 2.5;
+  /* display: inline-flex; */
+  align-items: center;
+}
+.invoice-table__button.blue {
+  background: #0b2d71;
+}
+.invoice-table__button.blue:hover {
+  background: #1041a3 !important;;
+}
+.invoice-table__button.grey {
+  background: grey;
+  cursor: not-allowed;
+}
+.mat-icon {
+  height: 18px;
+  /* width: 18px; */
+}
+
+:host ::ng-deep app-navigation nav a.invoice-detail__link {
+  color: #0b2d71;
+  font-weight: 900;
+  cursor: not-allowed;
+}
+
+:host ::ng-deep .navigation .invoices {
+  color: #0b2d71;
+  font-weight: 900;
+  cursor: not-allowed;
+}
+
+.invoice-details .mat-card {
+  /* display: flex; */
+  /* justify-content: space-between; */
+  align-items: center;
+}
+
+:host ::ng-deep .mat-select-placeholder{
+  /* -webkit-text-fill-color: #0b2d71; */
+  font-weight: bold;
+  position: relative;
+  top: -2px;
+  line-height: 1.18;
+  /* -webkit-text-fill-color: red; */
+}
+
+:host ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+  color: #0b2d71 !important;
+}
+:host ::ng-deep .mat-select-value-text span,
+:host ::ng-deep .mat-select-arrow {
+  /* color: #fff; */
+  color: #0b2d71;
+}
+.form-field {
+  /* width: 200px; */
+  font-size: 13px;
+  padding-right: 25px;
+  top: 3px;
+  /* float: right; */
+  /* margin: 15px 0 0 15px; */
+  /* margin-top:15px; */
+  /* position: relative; */
+  /* right: -252px; */
+  /* top: 2px; */
+}
+/* .containerBack{
+  display: flex;
+  align-items: center;
+  color: #0b2d71;
+  width: 50%;
+} */
+
+/* .right-menu {
+  display: flex;
+  width: 50%;
+}
+.left-select {
+  float: right;
+} */

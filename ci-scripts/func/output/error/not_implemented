@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  not_implemented
+#   DESCRIPTION:  raise not implemented error
+#    PARAMETERS:  ---
+#       RETURNS:  1
+#===============================================================================
+function not_implemented () {
+    echo "Not implemented error"
+    return 1
+}   # ----------  end of not_implemented  ---------

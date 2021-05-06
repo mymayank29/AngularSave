@@ -1,0 +1,162 @@
+<div class="invoice-table" [class.fullscreen]="fullscreen">
+    <mat-card>
+      <mat-toolbar>
+        <span>Invoices</span>
+        <span class="spacer"></span>
+        <mat-icon *ngIf="!fullscreen"
+          svgIcon="expand"
+          matTooltip="Expand table to fullscreen"
+          matTooltipPosition="above"
+          (click)="expand()"
+          class="invoice-table__icon">
+        </mat-icon>
+        <mat-icon *ngIf="fullscreen"
+          svgIcon="unexpand"
+          matTooltip="Fullscreen exit"
+          matTooltipPosition="above"
+          (click)="expand()"
+          class="invoice-table__icon">
+        </mat-icon>
+      </mat-toolbar>
+      <div class="container" [class.container-full]="fullscreen">
+      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+
+        <ng-container matColumnDef="contract_id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.contract_id}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('contract_id', i)"
+            [style.display]="getRowSpan('contract_id', i) ? '' : 'none'"
+            class="mat-column-border-right">{{element.contract_id}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="ariba_doc_id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.ariba_doc_id}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('ariba_doc_id', i)"
+            [style.display]="getRowSpan('ariba_doc_id', i) ? '' : 'none'"
+            class="mat-column-border-right">{{element.ariba_doc_id}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="wellname">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.wellname}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('wellname', i)"
+            [style.display]="getRowSpan('wellname', i) ? '' : 'none'"
+            class="mat-column-border-right">{{element.wellname}}</td>
+        </ng-container>
+
+         <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.id}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('id', i)"
+            [style.display]="getRowSpan('id', i) ? '' : 'none'"
+            class="mat-column-border-right">{{element.id}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="afe">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.afe}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('afe', i)"
+            [style.display]="getRowSpan('afe', i) ? '' : 'none'"
+            class="mat-column-border-right"> {{element.afe}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="jobtyp">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.jobtyp}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('jobtyp', i)"
+            [style.display]="getRowSpan('jobtyp', i) ? '' : 'none'"
+            class="mat-column-border-right"> {{element.jobtyp}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="parent_vendor">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right  mat-column-border-left">{{dbToUiMatches.parent_vendor}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('parent_vendor', i)"
+            [style.display]="getRowSpan('parent_vendor', i) ? '' : 'none'"
+            class="mat-column-border-right  mat-column-border-left"> {{element.parent_vendor}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="submit_date">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.submit_date}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('submit_date', i)"
+            [style.display]="getRowSpan('submit_date', i) ? '' : 'none'"
+            class="mat-column-border-right"> {{element.submit_date}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.price}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('price', i)"
+            [style.display]="getRowSpan('price', i) ? '' : 'none'"
+            class="mat-column-border-right"> {{element.price | currency}} </td>
+        </ng-container>
+<!--
+        <ng-container matColumnDef="npt_event_no">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.npt_event_no}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('npt_event_no', i)"
+            [style.display]="getRowSpan('npt_event_no', i) ? '' : 'none'"
+            class="mat-column-border-right"> {{element.npt_event_no}} </td>
+        </ng-container> -->
+        <ng-container matColumnDef="npt_ref_no">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.npt_ref_no}}</th>
+          <td mat-cell
+            *matCellDef="let element; let i = index"
+            [attr.rowspan]="getRowSpan('npt_ref_no', i)"
+            [style.display]="getRowSpan('npt_ref_no', i) ? '' : 'none'"
+            class="mat-column-border-right"> {{element.npt_ref_no}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.status}}</th>
+          <td mat-cell *matCellDef="let element" class="mat-column-border-right"> {{element.status}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="pt_spent_leakage_npt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.pt_spent_leakage_npt}}</th>
+          <td mat-cell *matCellDef="let element" class="mat-column-border-right"> {{element.pt_spent_leakage_npt | currency}} </td>
+        </ng-container>
+
+        <!-- <ng-container matColumnDef="spent_leakage_confirmed">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.spent_leakage_confirmed}}</th>
+          <td mat-cell *matCellDef="let element" class="mat-column-border-right"> {{element.spent_leakage_confirmed | currency}} </td>
+        </ng-container> -->
+
+        <ng-container matColumnDef="recovered">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.recovered}}</th>
+          <td mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.recovered | currency}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="comment">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.comment}}</th>
+          <td mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.comment}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="modified_by">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.modified_by}}</th>
+          <td mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.modified_by}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="modified_date">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-right">{{dbToUiMatches.modified_date}}</th>
+          <td mat-cell *matCellDef="let element" class="mat-column-border-right">{{element.modified_date}}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="onRowClicked(row)" [ngClass]="setSelectedRow(row)"></tr>
+      </table>
+      </div>
+    </mat-card>
+  </div>

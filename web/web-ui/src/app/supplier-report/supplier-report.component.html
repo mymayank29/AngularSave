@@ -1,0 +1,23 @@
+<div class="row">
+  <!-- <app-breadcrumbs  [filtersState]="filtersState"
+                    [togglesState]="togglesStateData"
+                    (resetFilters)="clearFiltersAndNpt()">
+  </app-breadcrumbs> -->
+  <!-- <app-filters #filters
+              (clearAllFilters)="clearFilters()"
+              (onToggleNPT)="toggleNPT($event)"
+              (onChangeNptDuration)="changeNptDuration($event)"
+              (onToggleMatchByDate)="toggleMatchByDate($event)"
+              (onToggleMatchByContract)="toggleMatchByContract($event)"
+              (onDispatchFiltersState)="dispatchFiltersState()"
+              [togglesState]="togglesStateData"
+              [maxNptDuration]="maxNptDuration"
+              (clearSingleFilter)="resetFilter($event)"
+              (resetFilters)="clearFiltersAndNpt()">
+  </app-filters> -->
+  <app-supplier-report-table #suplierTable class="table-sizer"
+                             [dataSource]="dataSource"
+                             (updateNpt)="updateNpt($event)"
+                             (updateInvoicesStatus)="updateInvoicesStatus($event)">
+  </app-supplier-report-table>
+</div>

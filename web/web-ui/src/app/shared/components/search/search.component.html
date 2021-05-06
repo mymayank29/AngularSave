@@ -1,0 +1,10 @@
+<div class="search-wrap">
+  <input #searchInput  type="text" placeholder="Search in table" class="search" aria-label="Search" matInput
+          [(ngModel)]="value">
+          <mat-icon svgIcon="search"></mat-icon>
+          <button *ngIf="value" 
+                  (click)="search('', 'searching'); value=''">
+            <span class="symbol">X</span>
+          </button>
+</div>
+

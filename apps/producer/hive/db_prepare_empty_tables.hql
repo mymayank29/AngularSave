@@ -1,0 +1,32 @@
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.metadata_info;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.invoice;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.interval_problem;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.invoice_to_npt_link;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.invoice_for_full_sf;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.interval_problem_full_sf;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.afe_detail;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.interval_problem_full_with_link_sf;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.time_log_detail;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.invoice_detail;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.overcharge_group;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.overcharge_detail;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.pdf_contract_info;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.amendments_to_contracts;
+DROP TABLE IF EXISTS  ${DESTINATION_DB}.cia_invoice_to_npt_link_detailed;
+
+
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.metadata_info (id int) LOCATION "${OUTPUT_PATH}/metadata_info";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.invoice (id int) LOCATION "${OUTPUT_PATH}/invoice";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.interval_problem (id int) LOCATION "${OUTPUT_PATH}/interval_problem";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.invoice_to_npt_link (id int) LOCATION "${OUTPUT_PATH}/invoice_to_npt_link";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.invoice_for_full_sf (id int) LOCATION "${OUTPUT_PATH}/invoice_for_full_sf";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.interval_problem_full_sf (id int) LOCATION "${OUTPUT_PATH}/interval_problem_full_sf";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.afe_detail (id int) LOCATION "${OUTPUT_PATH}/afe_detail";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.interval_problem_full_with_link_sf (id int) LOCATION "${OUTPUT_PATH}/interval_problem_full_with_link_sf";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.time_log_detail (id int) LOCATION "${OUTPUT_PATH}/time_log_detail";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.invoice_detail (id int) LOCATION "${OUTPUT_PATH}/invoice_detail";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.overcharge_group (id int) LOCATION "${OUTPUT_PATH}/overcharge_group";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.overcharge_detail (id int) LOCATION "${OUTPUT_PATH}/overcharge_detail";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.pdf_contract_info (id int) LOCATION "${OUTPUT_PATH}/pdf_contract_info";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.amendments_to_contracts (id int) LOCATION "${OUTPUT_PATH}/amendments_to_contracts";
+CREATE EXTERNAL TABLE IF NOT EXISTS ${DESTINATION_DB}.cia_invoice_to_npt_link_detailed (id int) LOCATION "${OUTPUT_PATH}/cia_invoice_to_npt_link_detailed";

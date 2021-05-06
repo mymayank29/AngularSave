@@ -1,0 +1,105 @@
+.invoice-table {
+  text-align: center;
+  margin: 0 auto;
+}
+
+.mat-toolbar-single-row {
+  height: 35px;
+  background-color: #48b1e5;
+  color: white;
+}
+
+.mat-toolbar-no-bgc {
+  background: none;
+  color: black;
+  margin: 30px 0;
+  padding: 30px 10px;
+}
+
+.mat-toolbar-row {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.mat-stroked-button {
+  border-radius: 5px;
+  background-color: #d72034;
+  margin: 0 0 0 20px;
+}
+
+.form-field {
+  font-size: 13px;
+  margin: 10px 20px;
+}
+
+#mat-option-0, #mat-option-1 {
+  height: 2em;
+}
+
+.line-height-1-5em {
+  line-height: 1.5em;
+}
+
+.container {
+  overflow: auto;
+  border: 1px solid #878888;
+}
+
+.container label {
+  margin: 0px 30px;
+  color: #48b1e5;
+}
+
+.container input {
+  margin: 5px 25px;
+  height: 22px;
+  text-align: center;
+  color: #48b1e5;
+  font-weight: bold;
+}
+
+#comment {
+    margin: auto;
+    height: 80px;
+    width: 100%;
+}
+
+.mat-card {
+  padding: 15px 10px;
+}
+
+.submit {
+    color: white;
+    margin: 20px auto;
+    padding: 10px;
+}
+:host {
+  flex: 1 1 100%;
+  box-sizing: border-box;
+  max-width: 19%;
+}
+.invoice-table__button {
+  background: transparent;
+  border: 1px solid #fff;
+  color: #fff;
+  padding: 7px 20px;
+  cursor: pointer;
+  line-height: 1.2;
+  border-radius: 7px;
+  margin: 10px auto;
+}
+.invoice-table__button.blue {
+  background: #0066b2;
+}
+.review {
+  flex-direction: column;
+  box-sizing: border-box;
+  display: flex;
+  padding: 20px 40px;
+}
+.review > .form-field {
+  flex: 1 1 100%;
+  box-sizing: border-box;
+  max-height: 50px;
+  min-height: 50px;
+}

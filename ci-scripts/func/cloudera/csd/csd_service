@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  csd_service
+#   DESCRIPTION:  Cloudera CSD service management function
+#    PARAMETERS:  -n service_name -a start|stop|restart|status -u user -p password -H localhost
+#       RETURNS:  ---
+#===============================================================================
+function csd_service ()
+{
+local -r USAGE="Usage: $0 -n service_name -a {start|stop|restart|status} -u user -p password -P 7180 --proto https"
+local HOST
+local PORT
+local PROTO
+
+# Get options
+while (( "${#}" )); do
+    case "${1}" in
+        -u|--username)
+            local -r USERNAME=${2}
+            ;;
+        -p|--password)
+            local -r PASSWORD=${2}
+            ;;
+        -n|--name)
+            local -r SERVICE_NAME=${2}
+            ;;
+        -a|--action)
+            local -r ACTION=${2}
+            ;;
+        -H|--host)
+            HOST=${2}
+            ;;
+        -P|--port)
+            PORT=${2}
+            ;;
+        --proto)
+            PROTO=${2}
+            ;;
+        *)
+            echo "${USAGE}"
+            exit 1
+            ;;
+    esac    # --- end of case ---
+    shift 2
+done
+
+
+#-------------------------------------------------------------------------------
+#   Default setting section
+#-------------------------------------------------------------------------------
+HOST="${HOST:-localhost}"
+PORT="${PORT:-7180}"
+PROTO="${PROTO:-http}"
+# ----------  end of Default settings section  ----------
+
+local -r API_CLIENT="curl -s -u ${USERNAME}:${PASSWORD}"
+local -r API_PREFIX="${PROTO}://${HOST}:${PORT}/api/v12/clusters/cluster/services"
+
+case "${ACTION}" in
+    start)
+        ${API_CLIENT} -X POST -k "${API_PREFIX}/${SERVICE_NAME}/commands/${ACTION}"
+        sleep 60
+        ;;
+    stop)
+        ${API_CLIENT} -X POST -k "${API_PREFIX}/${SERVICE_NAME}/commands/${ACTION}"
+        sleep 30
+        ;;
+    restart)
+        ${API_CLIENT} -X POST -k "${API_PREFIX}/${SERVICE_NAME}/commands/${ACTION}"
+        sleep 90
+        ;;
+    status)
+        ${API_CLIENT} -X GET -k "${API_PREFIX}/${SERVICE_NAME}/roles/"
+        ;;
+    *)
+        echo "${USAGE}"
+        exit 1
+        ;;
+esac    # --- end of case ---
+
+echo
+}   # ----------  end of function csd_service  ----------

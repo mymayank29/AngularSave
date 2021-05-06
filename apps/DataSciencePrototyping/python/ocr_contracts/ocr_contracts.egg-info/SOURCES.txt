@@ -1,0 +1,9 @@
+README.txt
+setup.py
+ocr_contracts/__init__.py
+ocr_contracts/ocr.py
+ocr_contracts/ocr_pyspark.py
+ocr_contracts.egg-info/PKG-INFO
+ocr_contracts.egg-info/SOURCES.txt
+ocr_contracts.egg-info/dependency_links.txt
+ocr_contracts.egg-info/top_level.txt

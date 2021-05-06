@@ -1,0 +1,20 @@
+export const INVOICES_DETAILS_COLUMNS: string[] = [
+  'parent_vendor',
+  'contract_id',
+  'id',
+  'wellname',
+  'afe',
+  'jobtyp',
+  'ariba_doc_id',
+  'submit_date',
+  'price',
+  // 'npt_event_no',
+  'npt_ref_no',
+  'status',
+  'pt_spent_leakage_npt',
+  // 'spent_leakage_confirmed',
+  'recovered',
+  'comment',
+  'modified_by',
+  'modified_date'
+];

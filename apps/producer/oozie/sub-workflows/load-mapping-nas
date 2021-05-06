@@ -1,0 +1,146 @@
+<workflow-app xmlns="uri:oozie:workflow:0.5" name="${parentWorkflowName}::select_source_data_nas">
+    <global>
+        <job-tracker>${jobTracker}</job-tracker>
+        <name-node>${nameNode}</name-node>
+        <configuration>
+            <property>
+                <name>mapreduce.job.queuename</name>
+                <value>${queueName}</value>
+            </property>
+            <property>
+                <name>oozie.launcher.mapreduce.map.memory.mb</name>
+                <value>8192</value>
+            </property>
+            <property>
+                <name>oozie.launcher.mapreduce.map.java.opts</name>
+                <value>-Xmx8192m</value>
+            </property>
+        </configuration>
+    </global>
+    <credentials>
+        <credential name="hive" type="hive2">
+            <property>
+                <name>hive2.server.principal</name>
+                <value>${jdbcPrincipal}</value>
+            </property>
+            <property>
+                <name>hive2.jdbc.url</name>
+                <value>${jdbcURL}</value>
+            </property>
+        </credential>
+    </credentials>
+    <start to="load-mapping-excel"/>
+
+    <action name="load-mapping-excel">
+        <java>
+            <main-class>com.chevron.udap.common.xlsx2csv.XlsxToCsv</main-class>
+            <arg>${mountedDir}/${ltcfpCountryData}</arg>
+            <arg>${destinationDir}/tmp/${ltcfpCountryRawDirName}/${ltcfpCountryRawDirName}.csv</arg>
+            <arg>${ltcfpCountryTabName}</arg>
+            <arg>${nameNode}</arg>
+        </java>
+        <ok to="extract-data-join"/>
+        <error to="extract-data-join"/>
+    </action>
+    <action name="extract-consolidated-data">
+        <java>
+            <main-class>com.chevron.udap.common.xlsx2csv.XlsxToCsv</main-class>
+            <arg>${mountedDir}/${ltcfpConsolidatedData}</arg>
+            <arg>${destinationDir}/tmp/${ltcfpConsolidatedRawDirName}/${ltcfpConsolidatedRawDirName}.csv</arg>
+            <arg>${ltcfpConsolidatedTabName}</arg>
+            <arg>${nameNode}</arg>
+        </java>
+        <ok to="extract-data-join"/>
+        <error to="extract-data-join"/>
+    </action>
+    <action name="extract-udt-ent-prod">
+        <java>
+            <main-class>com.chevron.udap.common.xlsx2csv.XlsxToCsv</main-class>
+            <arg>${mountedDir}/${udtCiapData}</arg>
+            <arg>${destinationDir}/tmp/${udtCiapDataEntProdRawDirName}/${udtCiapDataEntProdRawDirName}.csv</arg>
+            <arg>${udtCiapDataEntProdTabName}</arg>
+            <arg>${nameNode}</arg>
+        </java>
+        <ok to="extract-data-join"/>
+        <error to="extract-data-join"/>
+    </action>
+    <action name="extract-udt-cashflow">
+        <java>
+            <main-class>com.chevron.udap.common.xlsx2csv.XlsxToCsv</main-class>
+            <arg>${mountedDir}/${udtCiapData}</arg>
+            <arg>${destinationDir}/tmp/${udtCiapDataCashflowRawDirName}/${udtCiapDataCashflowRawDirName}.csv</arg>
+            <arg>${udtCiapDataCashflowTabName}</arg>
+            <arg>${nameNode}</arg>
+        </java>
+        <ok to="extract-data-join"/>
+        <error to="extract-data-join"/>
+    </action>
+    <action name="extract-udt-ent-reserves">
+        <java>
+            <main-class>com.chevron.udap.common.xlsx2csv.XlsxToCsv</main-class>
+            <arg>${mountedDir}/${udtCiapData}</arg>
+            <arg>${destinationDir}/tmp/${udtCiapDataEntReservesRawDirName}/${udtCiapDataEntReservesRawDirName}.csv</arg>
+            <arg>${udtCiapDataEntReservesTabName}</arg>
+            <arg>${nameNode}</arg>
+        </java>
+        <ok to="extract-data-join"/>
+        <error to="extract-data-join"/>
+    </action>
+    <action name="create-stage-tables" cred="hive">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <jdbc-url>${jdbcURL}</jdbc-url>
+            <script>${hiveScriptDir}/select-source-data-nas.hql</script>
+            <param>DATABASE_NAME=${hiveStagingSchemaName}</param>
+            <param>TABLES_LOCATION=${destinationDir}</param>
+            <param>QUEUE_NAME=${queueName}</param>
+        </hive2>
+        <ok to="delete-temporary-directory"/>
+        <error to="delete-temporary-directory"/>
+    </action>
+    <action name="delete-temporary-directory">
+        <fs>
+            <delete path="${destinationDir}/tmp"/>
+        </fs>
+        <ok to="report-status"/>
+        <error to="report-status"/>
+    </action>
+    <action name="report-status">
+        <sub-workflow>
+            <app-path>${reporterWorkflowDir}</app-path>
+            <propagate-configuration/>
+            <configuration>
+                <property>
+                    <name>rcpt</name>
+                    <value>${RCPT}</value>
+                </property>
+                <property>
+                    <name>wfname</name>
+                    <value>${wf:name()}</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>wfuser</name>
+                    <value>${wf:user()}</value>
+                </property>
+                <property>
+                    <name>wflastErrorNode</name>
+                    <value>${firstNotNull(wf:lastErrorNode(), "false")}</value>
+                </property>
+                <property>
+                    <name>wferrorMessage</name>
+                    <value>${firstNotNull(wf:errorMessage(wf:lastErrorNode()), "false")}</value>
+                </property>
+            </configuration>
+        </sub-workflow>
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+    <kill name="fail">
+        <message>Error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+
+</workflow-app>

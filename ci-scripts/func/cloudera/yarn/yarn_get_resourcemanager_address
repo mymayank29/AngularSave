@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  yarn_get_resourcemanager_address
+#   DESCRIPTION:  get address of resource manager
+#    PARAMETERS:  ---
+#       RETURNS:  resourcemanager_address
+#===============================================================================
+function yarn_get_resourcemanager_address ()
+{
+local ha_enabled=$(hdfs getconf -confKey yarn.resourcemanager.ha.enabled)
+
+if [ ha_enabled == true ]; then
+    local rm_id="$(hdfs getconf -confKey yarn.resourcemanager.ha.rm-ids | awk -F "," '{print $1}')"
+    hdfs getconf -confKey "yarn.resourcemanager.address.${rm_id}"
+else
+    hdfs getconf -confKey yarn.resourcemanager.address
+fi
+}

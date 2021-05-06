@@ -1,0 +1,17 @@
+.settings
+.idea
+build
+*.iml
+*.eml
+*.patch
+*.userlibraries
+out
+.classpath
+.project
+target
+production
+bin
+*.class
+*.log
+buildNumber.properties
+pom.xml.versionsBackup

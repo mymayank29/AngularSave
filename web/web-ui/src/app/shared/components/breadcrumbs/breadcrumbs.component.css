@@ -1,0 +1,53 @@
+:host {
+  flex: 1 100%;
+}
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  list-style: none;
+  padding-left: 0;
+}
+.breadcrumbs li span {
+  font-size: 15px;
+  color:#0066b2;
+}
+.breadcrumbs li .breadcrumbs__filter {
+  font-weight: bold;
+}
+.breadcrumbs li .breadcrumbs__value {
+  padding-left: 5px;
+}
+.breadcrumbs li .breadcrumbs__divider {
+  padding-left: 10px;
+  padding-right: 10px;
+  font-weight: bold;
+}
+.breadcrumbs li:last-child {
+  margin-right: 10px;
+}
+.breadcrumbs li:last-child .breadcrumbs__divider {
+  display: none;
+}
+.breadcrumbs-toolbar {
+  background: transparent;
+  min-height: 30px;
+}
+.clear-filter {
+  border-radius: 50%;
+  border: 1px solid rgba(218, 186, 186, 0.42);
+  background: #0066b2;
+  height: 22px;
+  width: 22px;
+  color: #fff;
+  cursor: pointer;
+  position: relative;
+}
+.symbol {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+}

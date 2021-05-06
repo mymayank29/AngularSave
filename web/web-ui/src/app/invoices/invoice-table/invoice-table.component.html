@@ -1,0 +1,574 @@
+<div class="invoice-table" [class.fullscreen]="fullscreen">
+  <mat-card>
+    <mat-toolbar class="mat-toolbar-no-bgc">
+        <div class="invoice-table-info">
+            <div class="leakages-progreses" >
+                <div class="leakages-progreses__item">
+                  <div class="progreses-header">
+                    <span class="progreses__name">Reviewed -- testing</span>
+                    <span class="progreses__value">{{leakageIdentifiedMax | currency}}</span>
+                  </div>
+                  <mat-progress-bar mode="determinate" [value]="(leakageIdentifiedMax/totalLeakage)*100"></mat-progress-bar>
+                </div>
+                <div class="leakages-progreses__item" >
+                    <div class="progreses-header">
+                      <span class="progreses__name">Recovered</span>
+                      <span class="progreses__value">{{leakageRecoveredMax | currency}}</span>
+                    </div>
+                   <!-- <mat-progress-bar mode="determinate" [value]="leakageRecoveredMax/totalRecovered"></mat-progress-bar>-->
+                   <mat-progress-bar mode="determinate" [value]="(leakageRecoveredMax/leakageIdentifiedMax)*100"></mat-progress-bar>
+                  </div>
+              </div>
+          </div>
+          <!-- <app-navigation (goToInvoiceDetail)="navigateToInvoicesDetail()"></app-navigation> -->
+          <app-search (onSearching)="onSearch($event)"></app-search>
+        
+    </mat-toolbar>
+    <mat-toolbar>
+      <span class="selected-items">{{selectedRows.size}} Records Selected</span>
+      <!-- <button
+        matTooltip="Select all filtered rows"
+        matTooltipPosition="above"
+        (click)="selectAll()"
+        class="invoice-table__button">{{selectValue}}</button> -->
+      <div class="header-right">
+        <div class="header-right-c">
+          <mat-form-field appearance="outline" class="form-field">
+            <!-- <mat-label>Change Invoice Status</mat-label> -->
+              <mat-select (selectionChange)="changeStatus($event.value)"
+                          [(ngModel)]="invoiceStatusSelected"
+                          placeholder = "Change Invoice Status">
+                <mat-option *ngFor="let status of statuses" [value]="status.value">{{status.viewValue}}</mat-option>
+              </mat-select>
+          </mat-form-field>
+      </div>
+      <!--
+        Button to navigate to invoice details page
+      -->
+      <div class="header-right-c">
+        <button mat-raised-button
+        (click)="navigateToInvoicesDetail()"
+        >Invoices</button>
+      </div>
+      <div class="header-right-c">
+        <button mat-raised-button
+        matTooltip="Export filtered data to CSV"
+        matTooltipPosition="above"
+        (click)="saveCsvFile()"
+        >Export to CSV</button>
+      </div>
+      <div class="header-right-c">
+        <button mat-raised-button
+        matTooltip="Configuring Table"
+        matTooltipPosition="above"
+        (click)="configureTable()"
+        >Configure Table</button>
+        <mat-card  class = "custom-column" (clickOutside)="onClickedOutside()" *ngIf = "openMatCard"> 
+            <mat-icon (click) = "configureTable()" style = "float: right; color: #0b2d71;">close</mat-icon>
+          <ul class="ul-custom-column">
+            <div class= "example-section" *ngFor = "let col of selectedColumns">
+              <mat-checkbox (change) = checkColumn(col) color="primary" class="example-margin" [checked] = "col.checked" [value] = "col.value">{{col.name}}</mat-checkbox>
+            </div>
+          </ul>
+          <div>
+              <button class = "btn-changedefault" (click)="changeDefault()" mat-raised-button>Default Selection</button>
+          </div>
+          <div>
+              <button class = "btn-applychanges" (click)="applyChanges()" mat-raised-button>Apply Changes</button>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+      <!-- <button mat-raised-button
+        matTooltip="Export filtered data to CSV"
+        matTooltipPosition="above"
+        (click)="saveCsvFile()"
+        class="invoice-table__button">Export to CSV</button> -->
+        <!-- <mat-paginator [pageSizeOptions]="[25, 50, 100]" showFirstLastButtons></mat-paginator> -->
+      <!-- <mat-icon *ngIf="!fullscreen"
+                svgIcon="expand"
+                matTooltip="Expand table to fullscreen"
+                matTooltipPosition="above"
+                (click)="expand()"
+                class="invoice-table__icon">
+      </mat-icon> -->
+      <!-- <mat-icon *ngIf="fullscreen"
+                svgIcon="unexpand"
+                matTooltip="Fullscreen exit"
+                matTooltipPosition="above"
+                (click)="expand()"
+                class="invoice-table__icon">
+      </mat-icon> -->
+
+    </mat-toolbar>
+    <!-- testing table here-->
+   
+    <div class="container" style="min-height: 0px; height: 41px;" [class.container-full]="fullscreen" *ngIf="!loading; else load">
+      <mat-table #table [dataSource]="dataSource" matSort  class="mat-elevation-z8">
+         <!-- Checkbox Column -->
+        <ng-container matColumnDef="select">
+            <mat-header-cell *matHeaderCellDef  class="mat-column-border-bottom mat-column-border-right">
+              <mat-checkbox  tabindex="-1" color = "primary" (change)="$event ? masterToggle() : null"
+                            [checked]="selection.hasValue() && isAllSelected()"
+                            [indeterminate]="selection.hasValue() && !isAllSelected()">
+              </mat-checkbox>
+            </mat-header-cell>
+            <mat-cell *matCellDef="let row"  class="mat-column-border-bottom mat-column-border-right">
+                <mat-checkbox  tabindex="-1" color = "primary" (mousedown) = "$event.stopPropagation()"
+                (change)="$event ? onRowClicked(row) : null"
+                [checked] = "selectedRows.has(row)">
+                </mat-checkbox>
+              <!-- <mat-checkbox color = "primary" (click)="$event.stopPropagation()"
+              (change)="$event ? onRowClicked(row) : null"
+              [checked]="selection.isSelected(row)"> 
+              </mat-checkbox> -->
+            </mat-cell>
+          </ng-container>
+    
+      <!-- Position Column -->
+        <ng-container matColumnDef="contract_id">
+          <mat-header-cell id="contract_id" *matHeaderCellDef mat-sort-header  class="mat-column-border-bottom left_aligned">{{tableHeaders.contract_id}}
+            <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"><a click.stop appLinkStyle [title]="element.contract_id">{{element.contract_id}}</a></mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="contract_title">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.contract_title}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element?.contract_title}}</mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="contract_owner_name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.contract_owner_name}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element.contract_owner_name}}</mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="key">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.id}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element.id}}</mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="ariba_doc_id">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.ariba_doc_id}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element.ariba_doc_id}}</mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="wellname">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.wellname}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"><a click.stop appLinkStyle>{{element.wellname}}</a></mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="wbs_element">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.wbs_element}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.wbs_element}} </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="jobtyp">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.jobtyp}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.jobtyp}} </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="npt_event_no">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom right_aligned">{{tableHeaders.npt_event_no}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"><a click.stop appLinkStyle (click)="navigateFromNPT($event)">{{element.npt_event_no}}</a></mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="npt_ref_no">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom right_aligned">{{tableHeaders.npt_ref_no}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.npt_ref_no}} </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="parent_vendor">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom mat-column-border-left left_aligned">{{tableHeaders.parent_vendor}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom mat-column-border-left"> {{element.parent_vendor}} </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="submit_date">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.submit_date}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.submit_date | date:'yyyy-MM-dd'}} </mat-cell>
+        </ng-container>
+  
+  
+        <ng-container matColumnDef="price">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom right_aligned">{{tableHeaders.price}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.price | currency}}
+          </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="npt_date_start">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.npt_date_start}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.npt_date_start | date:'yyyy-MM-dd'}} </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="npt_date_end">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.npt_date_end}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.npt_date_end | date:'yyyy-MM-dd'}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="work_start_date">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.work_start_date}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element.work_start_date?.substring(0,10)}}</mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="work_end_date">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.work_end_date}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element.work_end_date?.substring(0,10)}}</mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="npt_duration">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom right_aligned">{{tableHeaders.npt_duration}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.npt_duration}} </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="pt_spent_leakage_npt">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom right_aligned">{{tableHeaders.pt_spent_leakage_npt}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.pt_spent_leakage_npt | currency: 'USD' : 'symbol'}} </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="spent_leakage_confirmed">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom right_aligned">{{tableHeaders.spent_leakage_confirmed}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.spent_leakage_confirmed | currency: 'USD' : 'symbol'}} </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="recovered">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom right_aligned">{{tableHeaders.recovered}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element; let row;"  class="mat-column-border-bottom">
+            <span matPrefix>$</span>
+            <!-- <span class="currency" (click)="onEditRecovered($event)" *ngIf="!editRecovered">{{element.recovered | number:'.2-2'}}</span> -->
+            <input
+            tabindex="1"
+              type="tel"
+              click.stop
+              (blur)="save1($event, row)"
+              (focus)="onInputFocus1($event)"
+              class="editable-cell-input editable-cell-number"
+              [ngModel]="element.recovered | number:'.2-2'"
+              [ngModelOptions]="{updateOn:'blur'}"
+              (ngModelChange)="element.recovered=$event"
+              matInput>
+          </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.status}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom"> {{element.status}} </mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="comment">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.comment}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element; let row;"  class="mat-column-border-bottom">
+            <!-- <p
+              *ngIf="!editComment"
+              [matTooltip]="element.comment"
+              [matTooltipClass]="'tooltip'"
+              matTooltipPosition="above"
+              class="comment-box"
+              (click)="onEditComment($event)" >{{element.comment}}
+            </p> -->
+            <input
+           tabindex="1"
+            click.stop 
+            (blur)="save2($event, row)"
+            (focus)="onInputFocus2($event)"
+            class="editable-cell-input"
+            [(ngModel)]="element.comment"
+            matInput>
+  
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="by_date">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.by_date}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element?.by_date}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="is_weather">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.is_weather}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element?.is_weather}}</mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="modified_by">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.modified_by}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element.modified_by ? element.modified_by.slice(0,4) : ''}}</mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="modified_date">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom left_aligned">{{tableHeaders.modified_date}}
+              <mat-icon *ngIf='checkSort(sort)' style="transform: rotate(90deg); color:lightgray;">code</mat-icon>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element.modified_date ? element.modified_date.slice(0,16) : ''}}</mat-cell>
+        </ng-container>
+      
+        <mat-header-row *matHeaderRowDef="displayedColumns;"></mat-header-row>
+        <mat-row *ngIf = "false" ></mat-row>
+      </mat-table>
+     
+  
+      </div>
+   <!--testing table done--> 
+   
+
+
+    <div class="container" style="min-height: 0px;" [class.container-full]="fullscreen" *ngIf="!loading" >
+    <mat-table #table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+       <!-- Checkbox Column -->
+      <ng-container matColumnDef="select">
+          <mat-header-cell *matHeaderCellDef  class="mat-column-border-bottom mat-column-border-right">
+            <mat-checkbox  tabindex="-1" color = "primary" (change)="$event ? masterToggle() : null"
+                          [checked]="selection.hasValue() && isAllSelected()"
+                          [indeterminate]="selection.hasValue() && !isAllSelected()">
+            </mat-checkbox>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row"  class="mat-column-border-bottom mat-column-border-right">
+              <mat-checkbox  tabindex="-1" color = "primary" (mousedown) = "$event.stopPropagation()"
+              (change)="$event ? onRowClicked(row) : null"
+              [checked] = "selectedRows.has(row)">
+              </mat-checkbox>
+            <!-- <mat-checkbox color = "primary" (click)="$event.stopPropagation()"
+            (change)="$event ? onRowClicked(row) : null"
+            [checked]="selection.isSelected(row)"> 
+            </mat-checkbox> -->
+          </mat-cell>
+        </ng-container>
+  
+    <!-- Position Column -->
+      <ng-container matColumnDef="contract_id">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.contract_id}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned"><a click.stop appLinkStyle [title]="element.contract_id">{{element.contract_id}}</a></mat-cell>
+      </ng-container>
+
+       <ng-container matColumnDef="contract_title">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.contract_title}}</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned">{{element?.contract_title}}</mat-cell>
+        </ng-container>
+
+      <ng-container matColumnDef="contract_owner_name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.contract_owner_name}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned">{{element.contract_owner_name}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="key">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.id}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned">{{element.id}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="ariba_doc_id">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.ariba_doc_id}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned">{{element.ariba_doc_id}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="wellname">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.wellname}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned"><a click.stop appLinkStyle>{{element.wellname}}</a></mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="wbs_element">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.wbs_element}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned"> {{element.wbs_element}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="jobtyp">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.jobtyp}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned"> {{element.jobtyp}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="npt_event_no">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.npt_event_no}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom right_aligned"><a click.stop appLinkStyle (click)="navigateFromNPT($event)">{{element.npt_event_no}}</a></mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="npt_ref_no">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.npt_ref_no}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom right_aligned"> {{element.npt_ref_no}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="parent_vendor">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom mat-column-border-left">{{tableHeaders.parent_vendor}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom mat-column-border-left left_aligned"> {{element.parent_vendor}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="submit_date">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.submit_date}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned"> {{element.submit_date | date:'yyyy-MM-dd'}} </mat-cell>
+      </ng-container>
+
+
+      <ng-container matColumnDef="price">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.price}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom right_aligned"> {{element.price | currency}}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="npt_date_start">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.npt_date_start}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned"> {{element.npt_date_start | date:'yyyy-MM-dd'}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="npt_date_end">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.npt_date_end}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned"> {{element.npt_date_end | date:'yyyy-MM-dd'}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="work_start_date">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.work_start_date}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned">{{element.work_start_date?.substring(0,10)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="work_end_date">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.work_end_date}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned">{{element.work_end_date?.substring(0,10)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="npt_duration">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.npt_duration}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom right_aligned"> {{element.npt_duration}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="pt_spent_leakage_npt">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.pt_spent_leakage_npt}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom right_aligned"> {{element.pt_spent_leakage_npt | currency: 'USD' : 'symbol'}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="spent_leakage_confirmed">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.spent_leakage_confirmed}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom right_aligned"> {{element.spent_leakage_confirmed | currency: 'USD' : 'symbol'}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="recovered">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.recovered}}</mat-header-cell>
+        <mat-cell *matCellDef="let element; let row;"  class="mat-column-border-bottom right_aligned">
+          <span matPrefix>$</span>
+          <!-- <span class="currency" (click)="onEditRecovered($event)" *ngIf="!editRecovered">{{element.recovered | number:'.2-2'}}</span> -->
+          <input
+          tabindex="1"
+            type="tel"
+            click.stop
+            (blur)="save1($event, row)"
+            (keyup.enter) = "enterText($event)"
+            (focus)="onInputFocus1($event)"
+            class="editable-cell-input editable-cell-number right_aligned"
+            [ngModel]="element.recovered | number:'.2-2'"
+            [ngModelOptions]="{updateOn:'blur'}"
+            (ngModelChange)="element.recovered=$event"
+            matInput>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.status}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned"> {{element.status}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="comment">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.comment}}</mat-header-cell>
+        <mat-cell  *matCellDef="let element; let row;"  class="mat-column-border-bottom left_aligned">
+          <!-- <p
+            *ngIf="!editComment"
+            [matTooltip]="element.comment"
+            [matTooltipClass]="'tooltip'"
+            matTooltipPosition="above"
+            class="comment-box"
+            (click)="onEditComment($event)" >{{element.comment}}
+          </p> -->
+          <input
+           tabindex="1"
+            click.stop 
+            (blur)="save2($event, row)"
+            (keyup.enter) = "enterText($event)"
+            (focus)="onInputFocus2($event)"
+            class="editable-cell-input"
+            [(ngModel)]="element.comment"
+            matInput>
+
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="by_date">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.by_date}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element?.by_date}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="is_weather">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.is_weather}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom">{{element?.is_weather}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="modified_by">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.modified_by}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned">{{element.modified_by ? element.modified_by.slice(0,4) : ''}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="modified_date">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-border-bottom">{{tableHeaders.modified_date}}</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-border-bottom left_aligned">{{element.modified_date ? element.modified_date.slice(0,16) : ''}}</mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns;" style="display: none"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"  (mousedown)="onRowClicked(row)" (mouseover)="onItemSelect(row, $event)"  [ngClass]="setSelectedRow(row)"></mat-row>
+    </mat-table>
+   
+
+    </div>
+    <div *ngIf="!loading && showNoDatamessage">
+        No Data Available.
+    </div> 
+    <ng-template #load >
+      <br>
+        <p class="animate">Loading Data...</p>
+      <app-loader [strokeWidth]="2.5" [height]="200" [width]="200" [cx]="50" [cy]="50" [r]="15"></app-loader>
+    </ng-template>
+    <mat-paginator [ngClass] = "{'display-matpaginator-none': (loading == false && showNoDatamessage == true)}" [pageSizeOptions]="[25, 50, 100]" showFirstLastButtons></mat-paginator>
+  
+  </mat-card>
+ 
+</div>

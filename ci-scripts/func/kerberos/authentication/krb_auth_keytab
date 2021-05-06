@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  krb_auth_keytab
+#   DESCRIPTION:  obtains and caches ticket-granting ticket for principal
+#    PARAMETERS:  ---
+#       RETURNS:  ---
+#===============================================================================
+function krb_auth_keytab()
+{
+    # set credentials cache
+    export KRB5CCNAME="${HOME}/.krb5cc"
+
+    if kinit -k -t "${HOME}/.keytab/${USER}.keytab" "${USER}" ; then
+        echo "Kerberos Authentication: Success."
+    else
+        echo "Kerberos Authentication: Failed."
+        exit 1
+    fi
+}   # ----------  end of function krb_auth_keytab  ----------

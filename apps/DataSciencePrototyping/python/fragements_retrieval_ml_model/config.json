@@ -1,0 +1,8 @@
+{
+    "mlmodel_save_path" : "/home/hqej/Desktop/Fragments_Retrieval_2to3/Fragments_Retrieval_2to3/models/",
+    "input_files" : "/home/hqej/Desktop/Fragments_Retrieval_2to3/Fragments_Retrieval_2to3/Input_Files/**/*.txt",
+    "logs_save_path" : "/home/hqej/Desktop/Fragments_Retrieval_2to3/Fragments_Retrieval_2to3/ML_Model_Generator/Logs/",
+    "findspark" : "/etc/spark2",
+    "train_data" : "train_test_data/Train_data_v1.csv",
+    "test_data" : "train_test_data/Test_data_v1.csv"
+    }

@@ -1,0 +1,32 @@
+export interface FlaggedInvoiceItem {
+    afe: string;
+    approved_date: string;
+    ariba_doc_id: string;
+    comment: string;
+    contract_id: string;
+    contract_title: string;
+    id: string;
+    jobtyp: string;
+    npt_date_end: string;
+    npt_date_start: string;
+    npt_desc: string;
+    npt_duration: number;
+    npt_event_no: string;
+    daysSinceNPT: string;
+    npt_ref_no: string;
+    npt_type: string;
+    npt_type_detail: string;
+    npt_type_detail_desc: string;
+    parent_vendor: string;
+    price: number;
+    pt_spent_leakage_npt: number;
+    recovered: number;
+    servicetyp: string;
+    spent_leakage_confirmed: number;
+    status: string;
+    submit_date: string;
+    wellname: string;
+    work_end_date: string;
+    work_start_date: string;
+    rig_no: string;
+}

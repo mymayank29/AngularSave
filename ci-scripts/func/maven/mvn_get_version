@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  mvn_get_project_version
+#   DESCRIPTION:  get project version
+#    PARAMETERS:  ---
+#       RETURNS:  1.2.81.58
+#===============================================================================
+function mvn_get_project_version () {
+mvn help:evaluate -Dexpression=project.version \
+    | grep " Building" \
+    | awk '{print $4}'
+}   # ----------  end of function print_separator  ---------

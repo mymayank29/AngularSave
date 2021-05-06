@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set +x
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  increase_sprint
+#   DESCRIPTION:  increase sprint number function
+#    PARAMETERS:  filename
+#       RETURNS:  ---
+#===============================================================================
+function increase_sprint () {
+
+local -r sprint_conf="$1"
+
+test -r "${sprint_conf}" || { echo "Couldn't read ${sprint_conf}"; exit 1; }
+source  "${sprint_conf}"
+
+if [[ -z "${WEEK_N}"  || -z "${SPRINT}" ]]; then
+    SPRINT="0"
+    WEEK_N="2"
+fi
+
+case "${WEEK_N}" in
+	"1")
+    	WEEK_N="$((WEEK_N+1))"
+        ;;
+	"2")
+        SPRINT="$((SPRINT+1))"
+        WEEK_N="1"
+        ;;
+	*)
+    	echo "Wrong week number!"
+        exit 1
+        ;;
+esac    # --- end of case --
+
+echo "--------------------"
+echo "Sprint  :${SPRINT}"
+echo "Week No :${WEEK_N}"
+echo "--------------------"
+
+cat > "${sprint_conf}" <<EOF
+SPRINT="${SPRINT}"
+WEEK_N="${WEEK_N}"
+EOF
+}   # ----------  end of increase_sprint  ----------

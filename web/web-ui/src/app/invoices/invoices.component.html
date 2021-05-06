@@ -1,0 +1,29 @@
+<div class="invoices">
+    <!-- <app-breadcrumbs
+      [filtersState]="filtersState"
+      [togglesState]="toggleStateData"
+      (resetFilters)="clearFiltersAndNpt()">
+    </app-breadcrumbs> -->
+    <app-filters
+      #filters
+      (clearSingleFilter)="resetFilter($event)"
+      (onToggleNPT)="toggleNPT($event)"
+      (onChangeNptDuration)="changeNptDuration($event)"
+      (onToggleMatchByDate)="toggleMatchByDate($event)"
+      (onToggleMatchByContract)="toggleMatchByContract($event)"
+      (onDispatchFiltersState)="dispatchFiltersState()"
+      (resetFilters)="clearFiltersAndNpt()"
+      [togglesState]="toggleStateData"
+      [filterTheme]="filterTheme"
+      [maxNptDuration]="maxNptDuration">
+    </app-filters>
+    <app-invoice-table
+      #invoiceTable
+      [dataSource]="dataSource"
+      (searching) = "applySearch($event)"
+      (resetFiltersWhenSearch)="clearFilters()"
+      (updateInvoice)="onInvoiceUpdate($event)"
+      (nptFinishSetDefault) = "setNptFinishDefault()"
+      [togglesState]="toggleStateData"
+      class="table-sizer"></app-invoice-table>
+</div>

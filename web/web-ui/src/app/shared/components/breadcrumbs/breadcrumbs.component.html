@@ -1,0 +1,52 @@
+<mat-toolbar class="breadcrumbs-toolbar">
+    <ul class="breadcrumbs">
+      <li *ngIf="filtersState?.contract_owner_name">
+        <span class="breadcrumbs__filter">Category Manager:</span>
+        <span class="breadcrumbs__value">{{filtersState?.contract_owner_name}}</span>
+        <span class="breadcrumbs__divider">></span>
+      </li>
+      <li *ngIf="filtersState?.wellname">
+        <span class="breadcrumbs__filter">Well:</span>
+        <span class="breadcrumbs__value">{{filtersState?.wellname}}</span>
+        <span class="breadcrumbs__divider">></span>
+      </li>
+      <li *ngIf="filtersState?.parent_vendor">
+        <span class="breadcrumbs__filter">Supplier:</span>
+        <span class="breadcrumbs__value">{{filtersState?.parent_vendor}}</span>
+        <span class="breadcrumbs__divider">></span>
+      </li>
+      <li *ngIf="filtersState?.status">
+        <span class="breadcrumbs__filter">Status:</span>
+        <span class="breadcrumbs__value">{{filtersState?.status}}</span>
+        <span class="breadcrumbs__divider">></span>
+      </li>
+      <li *ngIf="togglesState">
+        <span class="breadcrumbs__filter">NPT type:</span>
+        <span *ngIf="togglesState?.isweather; else isWeather">Weather</span>
+        <ng-template #isWeather>
+          <span class="breadcrumbs__value">Non Weather</span>
+        </ng-template>
+        <span class="breadcrumbs__divider">></span>
+      </li>
+      <li *ngIf="togglesState">
+        <span class="breadcrumbs__filter">Match by Date:</span>
+        <span class="breadcrumbs__value" *ngIf="togglesState?.ismatchbydate; else isMatchByDate">Yes</span>
+        <ng-template #isMatchByDate>
+          <span class="breadcrumbs__value">No</span>
+        </ng-template>
+        <span class="breadcrumbs__divider">></span>
+      </li>
+      <li *ngIf="togglesState">
+        <span class="breadcrumbs__filter">Match by Contract:</span>
+        <span class="breadcrumbs__value" *ngIf="togglesState?.ismatchbycontract; else isMatchByContract">Yes</span>
+        <ng-template #isMatchByContract>
+          <span class="breadcrumbs__value">No</span>
+        </ng-template>
+        <span class="breadcrumbs__divider">></span>
+      </li>
+    </ul>
+    <!-- *ngIf="filtersState?.contract_owner_name || filtersState?.wellname || filtersState?.parent_vendor || filtersState?.status" -->
+    <button class="clear-filter" (click)="onResetFilters()">
+      <span class="symbol">X</span>
+    </button>
+</mat-toolbar>

@@ -1,0 +1,38 @@
+<div class="invoice-details">
+  <mat-card>
+    <!-- <app-navigation></app-navigation> -->
+    
+    <a  [routerLink]="'/'" routerLinkActive="active">
+      <mat-icon style="color: #0b2d71;padding-top:17px; float: left;">keyboard_backspace</mat-icon>
+      <h3 style= "color: rgb(11, 45, 113); float: left;">Back to NPT</h3>
+      </a>
+
+      <div style = "float: right;">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-select (selectionChange)="changeStatus($event.value)"
+                    [(ngModel)]="invoiceStatusSelected"
+                    placeholder = "Change Invoice Status">
+          <mat-option *ngFor="let status of statuses" [value]="status.value">{{status.viewValue}}</mat-option>
+        </mat-select>
+    </mat-form-field>
+      
+    <!-- <button 
+    class='invoice-table__button blue'
+      (click)="exportToExcel()">Export Details</button> -->
+     
+      <button  [disabled] = "loadLineItems || loadNptEvents"
+      [className]="(loadLineItems || loadNptEvents) ? 'invoice-table__button grey' : 'invoice-table__button blue'"
+        (click)="exportToExcel()">Export to CSV</button>
+      </div>
+    
+  </mat-card>
+  <app-invoices-in-detail (getInvoices)="setInvoiceData($event)"></app-invoices-in-detail>
+  <div class="invoice-details-row">
+    <div class="invoice-details-tables">
+      <app-line-items (getLineItems)="setLineItemsData($event)"></app-line-items>
+      <app-npt-events (getNptEvents)="setNptEventsData($event)"></app-npt-events>
+      <!-- <app-contract-restrictions></app-contract-restrictions> -->
+    </div>
+    <!-- <app-review (updateInvoice)="onInvoiceUpdate($event)"></app-review> -->
+  </div>
+</div>

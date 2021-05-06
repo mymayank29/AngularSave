@@ -1,0 +1,10 @@
+.banner-npt {
+  background: #0066b2;
+  padding: 100px;
+  text-align: center;
+}
+.banner-npt__title {
+  color: #ffffff;
+  font-family: sans-serif;
+  font-size: 65px;
+}

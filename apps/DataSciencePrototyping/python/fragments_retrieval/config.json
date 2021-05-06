@@ -1,0 +1,8 @@
+{
+    "mlmodel_path" : "/home/hqej/Desktop/Fragments_Retrieval_2to3/Fragments_Retrieval_2to3/models/random_forest_model_v2.sav",
+    "input_files" : "/home/hqej/Desktop/Fragments_Retrieval_2to3/Fragments_Retrieval_2to3/Input_Files/**/*.txt",
+    "logs_save_path" : "/home/hqej/Desktop/Fragments_Retrieval_2to3/Fragments_Retrieval_2to3/logs/",
+    "findspark" : "/etc/spark2",
+    "hdfs_file_path" : "/data/Stage/svccdf_d/CDF_InvoiceAnalytics/ocr_res/",
+    "output_filename" : "/home/hqej/Desktop/Fragments_Retrieval_2to3/Fragments_Retrieval_2to3/Output_files/"
+    }

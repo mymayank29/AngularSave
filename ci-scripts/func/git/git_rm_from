@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  git_rm_from
+#   DESCRIPTION:  recursively remove the all git repos/all .git folders 
+#    PARAMETERS:  ---
+#       RETURNS:  ---
+#===============================================================================
+function git_rm_from ()
+{
+    # set credentials cache
+    find . -name ".git" -exec rm -rf {} +
+    find . -name ".gitignore" -exec rm -rf {} +
+}   # ----------  end of function git_rm_from  ----------

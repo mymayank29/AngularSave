@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  print_separator
+#   DESCRIPTION:  print separator
+#    PARAMETERS:  charter
+#       RETURNS:  ---
+#===============================================================================
+function print_separator() {
+   for (( i=1; i<=80; i++ )); do
+      echo -ne "${1}"
+   done
+   echo -ne "\n"
+}   # ----------  end of function print_separator  ---------

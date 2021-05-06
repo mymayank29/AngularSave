@@ -1,0 +1,22 @@
+<div class="invoice-table">
+  <mat-card>
+    <mat-toolbar>
+      <span>Classify and Review</span>
+    </mat-toolbar>
+    <div class="container review">
+      <mat-form-field class="form-field">
+        <mat-select (selectionChange)="changeStatus($event.value)" [(ngModel)]="invoiceStatusSelected" placeholder="Change Invoice(s) Status">
+          <mat-option *ngFor="let status of statuses" [value]="status.value">
+            {{status.viewValue}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <label>Spend Leakage Confirmed</label>
+      <input #total onlydigit type="number" min="0" [ngModel]="selectedInvoices[0].pt_spent_leakage_npt" (focus)="onInputFocus($event)">
+      <label>Amount Recovered</label>
+      <input #recovered onlydigit type="number" min="0" [ngModel]="selectedInvoices[0].recovered" (focus)="onInputFocus($event)">
+      <input #comment id="comment" type="text" placeholder="Comments">
+      <button (click)="submitChanges(total, recovered, comment)"  class="invoice-table__button blue">Submit</button>
+    </div>
+  </mat-card>
+</div>

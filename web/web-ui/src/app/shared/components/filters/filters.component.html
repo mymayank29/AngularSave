@@ -1,0 +1,282 @@
+<div class="filters ad-filter">
+
+  <mat-card class="mat-card-flex" style="width: 10%">
+    <mat-form-field  appearance="outline" class="form-field">
+        <mat-label>Category Manager</mat-label>
+        <mat-select id = "categoryManagerID" (selectionChange)="publishFilter($event.value, 'contract_owner_name')" multiple [formControl]="categoryManagerControl"  disableOptionCentering>
+            <mat-option style= "background-color: whitesmoke; z-index: 2" class = "filter-option">
+                <div style= "margin-top: -25px; margin-left: -50px;position: fixed; z-index: 1; background-color: whitesmoke; padding-top: 5px; padding-left: 15px;width: 490px;">
+                  <button mat-raised-button 
+                    class="mat-primary fill text-sm clear-filter" >
+                    Clear
+                 </button>
+               </div>
+              </mat-option>
+          <div style="margin-top: 5px;"> 
+          <mat-option *ngFor="let category_manager of filterCategoryManager$ | async" [value]="category_manager">{{category_manager}}</mat-option>
+          </div>
+        </mat-select>
+    </mat-form-field>
+    <!-- <button [class.hidden]="!categoryManagerControl.value" (click)="resetFilter('contract_owner_name')"><span class="symbol">X</span></button> -->
+    <!-- <button *ngIf = "categoryManagerControl.value && category_manager_subscribe != undefined && category_manager_subscribe != null && category_manager_subscribe.length != 0" (click)="resetFilter('contract_owner_name')"><span class="symbol">X</span></button> -->
+   
+  </mat-card>
+
+
+  <mat-card class="mat-card-flex">
+      <mat-form-field   appearance="outline" class="form-field">
+        <mat-label>Supplier</mat-label> 
+        <mat-select (selectionChange)="publishFilter($event.value, 'parent_vendor')" multiple [formControl]="supplierControl" disableOptionCentering>
+        
+              <mat-option  style= "background-color: whitesmoke; z-index: 2"class = "filter-option">
+                <div style= "margin-top: -25px; margin-left: -69px;position: fixed; z-index: 1; background-color: whitesmoke; padding-top: 5px; padding-left: 15px;width: 490px;">
+                <button mat-raised-button  
+                  class="mat-primary fill text-sm clear-filter" >
+                  Clear
+              </button>
+             </div>
+              </mat-option>  
+           
+         <div style="margin-top: 5px;">
+            <mat-option  *ngFor="let suppier of filterSupplier$ | async" [value]="suppier">{{suppier}}</mat-option>
+          </div>
+          </mat-select>
+      </mat-form-field>
+      <!-- <button [class.hidden]="!supplierControl.value" (click)="resetFilter('parent_vendor')"><span class="symbol">X</span></button> -->
+    </mat-card>
+  <!-- <mat-card class="mat-card-flex">
+    <mat-form-field class="form-field">
+        <mat-select  (selectionChange)="publishFilter($event.value, 'parent_vendor')" multiple [formControl]="supplierControl" disableOptionCentering placeholder="Supplier">
+          <mat-option *ngFor="let suppier of filterSupplier$ | async" [value]="suppier">{{suppier}}</mat-option>
+        </mat-select>
+    </mat-form-field> -->
+    <!-- <button [class.hidden]="!supplierControl.value" (click)="resetFilter('parent_vendor')"><span class="symbol">X</span></button> -->
+    <!-- <button *ngIf = "supplierControl.value && parent_vendor_subscribe != undefined && parent_vendor_subscribe != null && parent_vendor_subscribe.length != 0" (click)="resetFilter('parent_vendor')"><span class="symbol">X</span></button> -->
+  <!-- </mat-card> -->
+
+
+  <!--
+    testing datepicker
+  -->
+<mat-card style="width: 9%" class="mat-card-flex">
+  <mat-form-field appearance="outline" class="form-field">
+      <mat-label>From date</mat-label> 
+    <input #fromDate matInput [matDatepicker]="picker1" matTooltip="From Invoice Submit Date" [formControl]="dateFromControl" 
+    (dateChange)="publishFilter($event.value, 'submit_date')" >
+    <!-- <button [class.hidden]="!dateFromControl.value && !dateToControl.value" (click)="resetFilter('date')"><span class="symbol">X</span></button> -->
+    <mat-icon class="mat-datepicker-clear-icon"  *ngIf="!(!dateFromControl.value )"  (click)="resetFilter('submit_date')">clear</mat-icon>
+    <mat-datepicker-toggle  class="mat-datepicker-toggle-icon" matSuffix [for]="picker1" >
+      <!-- <mat-icon *ngIf="!(!dateFromControl.value && !dateToControl.value)" matDatepickerToggleIcon (click)="resetFilter('date')">clear</mat-icon> -->
+      <mat-icon  matDatepickerToggleIcon>calendar_today</mat-icon>
+    </mat-datepicker-toggle>
+    <mat-datepicker #picker1 panelClass="datepicker"></mat-datepicker>
+  </mat-form-field>
+</mat-card>
+<mat-card style="width: 9%" class="mat-card-flex"  >
+  <mat-form-field appearance="outline" class="form-field">
+      <mat-label>To date</mat-label> 
+    <input #toDate matInput [matDatepicker]="picker2" matTooltip="To Invoice Submit Date" [formControl]="dateToControl" 
+    (dateChange)="publishFilter($event.value, 'date_second')">
+    <mat-icon class="mat-datepicker-clear-icon"  *ngIf="!( !dateToControl.value)"  (click)="resetFilter('date_second')">clear</mat-icon>
+    <mat-datepicker-toggle  class="mat-datepicker-toggle-icon" matSuffix [for]="picker2">
+      <mat-icon matDatepickerToggleIcon>calendar_today</mat-icon>
+    </mat-datepicker-toggle>
+    <mat-datepicker #picker2 panelClass="datepicker"></mat-datepicker>
+  </mat-form-field>
+  <!-- <button style = "float: right"[class.hidden]="!dateFromControl.value && !dateToControl.value" (click)="resetFilter('date')"><span class="symbol">X</span></button> -->
+</mat-card>
+
+
+
+  <!--Date picker testing done-->
+
+  <!-- <mat-card class="mat-card-flex">
+    <mat-card-content class="filter-date">
+      <button style = "float: right"[class.hidden]="!dateFromControl.value && !dateToControl.value" (click)="resetFilter('date')"><span class="symbol">X</span></button>
+        <mat-form-field  appearance="outline" class="form-field">
+            <mat-label>from</mat-label> 
+          <input class = "dateClass" type="text" matInput [formControl]="dateFromControl" [matAutocomplete]="autoDate">
+          <mat-icon matSuffix>arrow_drop_down</mat-icon>
+          <mat-autocomplete #autoDate="matAutocomplete" (optionSelected)="publishFilter($event.option.value, 'submit_date')" >
+              <mat-option *ngFor="let date of filterFromDate$ | async" [value]="date">{{date}}</mat-option>
+            </mat-autocomplete>
+        </mat-form-field>
+        <mat-form-field  appearance="outline" class="form-field">
+            <mat-label>to</mat-label>
+          <input class = "dateClass" type="text"  aria-label="SecondDate" matInput [formControl]="dateToControl" [matAutocomplete]="autoSecondDate">
+          <mat-icon matSuffix>arrow_drop_down</mat-icon>
+          <mat-autocomplete  #autoSecondDate="matAutocomplete" (optionSelected)="publishFilter($event.option.value, 'date_second')" placeholder="SecondDate">
+            <mat-option *ngFor="let secondDate of filterToDate$ | async" [value]="secondDate">{{secondDate}}</mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+    </mat-card-content>
+  </mat-card> -->
+
+  <mat-card class="mat-card-flex">
+      <mat-form-field  appearance="outline" class="form-field">
+          <mat-label>Well</mat-label>  
+        <mat-select  (selectionChange)="publishFilter($event.value, 'wellname')" multiple [formControl]="wellControl" disableOptionCentering>
+              
+                 <mat-option style= "background-color: whitesmoke; z-index: 1" class = "filter-option">
+                    <div style= "margin-top: -25px; margin-left: -69px;position: fixed; z-index: 1; background-color: whitesmoke; padding-top: 5px; padding-left: 15px;width: 490px;">
+                      <button mat-raised-button 
+                        class="mat-primary fill text-sm clear-filter" >
+                        Clear
+                     </button>
+                    </div>
+                </mat-option>  
+          
+            <div style="margin-top: 5px;">
+              <mat-option *ngFor="let well of filterWell$ | async" [value]="well">{{well}}</mat-option>
+            </div>
+          </mat-select>
+      </mat-form-field>
+      <!-- <button [class.hidden]="!wellControl.value" (click)="resetFilter('wellname')"><span class="symbol">X</span></button> -->
+      <!-- <button *ngIf = "wellControl.value && wellname_subscribe != undefined && wellname_subscribe != null && wellname_subscribe.length != 0" (click)="resetFilter('wellname')"><span class="symbol">X</span></button> -->
+    </mat-card>
+
+  <mat-card *ngIf="(filterTheme == 'homepage')" class="mat-card-flex">
+    <mat-form-field  appearance="outline" class="form-field">
+        <mat-label>Status</mat-label>
+      <mat-select  (selectionChange)="publishFilter($event.value, 'status')" multiple [formControl]="statusControl" disableOptionCentering>
+          <mat-option class = "filter-option">
+              <button mat-raised-button 
+                class="mat-primary fill text-sm clear-filter" >
+                Clear
+            </button>
+            </mat-option>  
+        <mat-option *ngFor="let status of filterSatus$ | async" [value]="status">{{status}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <!-- <button [class.hidden]="!statusControl?.value" (click)="resetFilter('status')"><span class="symbol">X</span></button> -->
+    <!-- <button *ngIf = "statusControl.value && status_subscribe != undefined && status_subscribe != null && status_subscribe.length != 0" (click)="resetFilter('status')"><span class="symbol">X</span></button> -->
+  </mat-card>
+
+  <mat-card class="mat-card-flex4">
+    <mat-form-field class="form-field" appearance="outline" (click)="nptDuration()" >
+      <mat-label style= "color: rgba(0,0,0,.55);">NPT Duration</mat-label>
+       <input  matInput   matTooltip="NPT Duration"
+       [ngClass]="{'noShowNPTDurationTextClass': durationText.showNPTDurationText==false}"
+      matTooltipPosition="above"
+      disabled
+      value="{{durationText.showNPTDurationText ? null : (nptStartValue + '     -     ' + nptFinishValue)}}"
+      >
+      <!-- <span [ngClass]="{'noShowNPTDurationTextClass': showNPTDurationText==false}">{{showNPTDurationText ? 'NPT Duration' : (nptStartValue + ' - ' + nptFinishValue)}}</span> -->
+    <mat-icon   class="mat-npt-duration-drop-icon" >arrow_drop_down</mat-icon>
+    <!-- <mat-hint *ngIf="!durationText.showNPTDurationText">min(hrs) - max(hrs)</mat-hint> -->
+    </mat-form-field>
+      <!-- <button mat-raised-button
+      matTooltip="NPT Duration"
+      matTooltipPosition="above"
+      (click)="nptDuration()"
+      >
+      <span [ngClass]="{'noShowNPTDurationTextClass': showNPTDurationText==false}">{{showNPTDurationText ? 'NPT Duration' : (nptStartValue + ' - ' + nptFinishValue)}}</span>
+    <mat-icon style = "padding-left: 30px; padding-right: 0px;">arrow_drop_down</mat-icon>
+  </button> -->
+     
+      <mat-card  class = "custom-column mat-card-multiple mat-card-duration" (clickOutside)="onClickedOutside()" *ngIf = "openMatCard"> 
+          <mat-icon (click) = "nptDuration()" style = "float: right; color: #0b2d71;">close</mat-icon>
+          <mat-card-header>
+              <!-- <mat-card-title>NPT Duration:</mat-card-title> -->
+              <!-- <button [class.hidden]="(nptFinishValue === 1000) && (nptStartValue === 0)" (click)="resetNptDuration()"><span class="symbol">X</span></button> -->
+            </mat-card-header>
+          <div class="sliders">
+              <!-- <mat-form-field appearance="outline" class="form-field form-field2"> -->
+              <input matInput type="number" class = "input-duration" onlydigit step="0.5" [(ngModel)]="nptStartValue">
+              <!-- </mat-form-field> -->
+              <span class="divider">-</span>
+              <!-- <mat-form-field appearance="outline" class="form-field form-field2"> -->
+              <input matInput type="number" class = "input-duration" onlydigit step="0.5" [(ngModel)]="nptFinishValue">
+            <!-- </mat-form-field> -->
+          </div>
+          <div>
+            <span *ngIf = "validMinValue" style="float: left; font-size: small; padding: 5px">Enter Min. Hours</span>
+            <span *ngIf = "validMaxValue" style = "float: right; font-size: small; padding: 5px">Enter Max. Hours</span>
+            <span *ngIf = "inValidMinValue" style="float: left; font-size: small; padding: 5px; color: red;">{{messageMinVal}}</span>
+            <span *ngIf = "inValidMaxValue" style = "float: right; font-size: small; padding: 5px; color: red;">{{messageMaxVal}}</span>
+            
+          </div>
+          <div class = "footer-button-duration">
+            <button mat-button color="primary"  (click)="resetNptDuration();" class="clear-duration no-hover-effect" disableOptionCentering >Clear</button>
+            <button mat-button color="primary"  (click)="changeNptDuration()" class="apply-duration no-hover-effect" disableOptionCentering>Apply</button>
+          </div>
+      </mat-card>
+  </mat-card>
+
+  <!-- <mat-card  class="mat-card-flex" style="width:7%" >
+    <div class="align">
+      <mat-card-header>
+        <mat-card-title>NPT type</mat-card-title>
+      </mat-card-header>
+      <mat-slide-toggle color="primary"
+                        [checked]="togglesState?.isweather"
+                        (change)="toggleNPT($event)">
+                        {{isWeather}}
+      </mat-slide-toggle>
+    </div>
+  </mat-card> -->
+  <mat-card class="mat-card-flex" style="width: 18%;">
+      <div class="align">
+          <mat-card-header>
+              <mat-card-title style="color: #0b2d71;">NPT Type</mat-card-title>
+          </mat-card-header>
+    
+          <mat-radio-group style="font:400 14px/20px Roboto,'Helvetica Neue',sans-serif" [(ngModel)]="togglesState.isweather" (change)="toggleNPTNew(togglesState.isweather)">
+            <mat-radio-button style="padding-right:15px;" value="Y">Weather</mat-radio-button>
+            <mat-radio-button style="padding-right:15px;" value="N">Non-Weather</mat-radio-button>
+            <mat-radio-button style="padding-right:8px;" value="B">Both</mat-radio-button>
+          </mat-radio-group>
+  
+    </div>
+  </mat-card>
+<!-- <mat-card class="mat-card-flex mat-card-multiple mat-card-duration">
+  <mat-card-header>
+    <mat-card-title>NPT Duration:</mat-card-title>
+    <button [class.hidden]="(nptFinishValue === 1000) && (nptStartValue === 0)" (click)="resetNptDuration()"><span class="symbol">X</span></button>
+  </mat-card-header>
+  <div class="sliders">
+    <input matInput type="number" onlydigit step="0.5" [(ngModel)]="nptStartValue" (keyup.enter)="changeNptDuration()">
+    <span class="divider">-</span>
+    <input matInput type="number" onlydigit step="0.5" [(ngModel)]="nptFinishValue" (keyup.enter)="changeNptDuration()">
+  </div>
+</mat-card> -->
+ 
+
+  <mat-card  class="mat-card-flex" style="width: 11%">
+    <div class="align">
+      <mat-card-header>
+        <mat-card-title  matTooltip="Data Integrity is improved when the Match By Date toggle is On. It ensures that only  NPT Records with NPT Dates that match with Invoice Dates are being displayed."
+       matTooltipPosition="above" style="color: #0b2d71;">Match by Date Only </mat-card-title>
+      </mat-card-header>
+      <mat-slide-toggle color="primary"
+                        [checked]="togglesState?.ismatchbydate"
+                        (change)="toggleByDate($event)">
+                        {{isMatchedByDate}}
+      </mat-slide-toggle>
+    </div>
+  </mat-card>
+
+  <!-- <mat-card  class="mat-card-flex" style="width: 8%">
+    <div class="align">
+      <mat-card-header>
+        <mat-card-title >Match by Contract Only</mat-card-title>
+      </mat-card-header>
+      <mat-slide-toggle color="primary"
+                        [checked]="togglesState?.ismatchbycontract"
+                        (change)="toggleByContract($event)">
+                        {{isMatchedByContract}}
+      </mat-slide-toggle>
+    </div>
+  </mat-card> -->
+
+  <mat-card class = "mat-card-flex2">
+    <div class = "align">
+    <mat-card-content class="form-field" style = "margin-top:10px;">
+      <button mat-raised-button  class="clear-filter" (click)="onResetFilters()">
+          Clear All
+      </button>
+    </mat-card-content>
+  </div>
+  </mat-card>
+  
+</div>

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  mvn_strip_project_version
+#   DESCRIPTION:  get project version with stripped build id
+#    PARAMETERS:  ---
+#       RETURNS:  1.2.81.
+#===============================================================================
+function mvn_strip_project_version () {
+local -r VERSION_REGEX="^\d{1,3}\.\d{1,9}\.\d{1,9}\."
+mvn help:evaluate -Dexpression=project.version \
+    | grep " Building" \
+    | awk '{print $4}' \
+    | grep -Po "^\d{1,3}\.\d{1,9}\.\d{1,9}\."
+}   # ----------  end of function print_separator  ---------

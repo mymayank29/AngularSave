@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+
+#===  FUNCTION  ================================================================
+#          NAME:  oozie_get_status 
+#   DESCRIPTION:  get status of oozie job function
+#    PARAMETERS:  job_id 
+#       RETURNS:  job_status
+#===============================================================================
+function oozie_get_status ()
+{
+local -r OOZIE_URL="http://localhost:11000/oozie/"
+oozie job -oozie "${OOZIE_URL}" -info "${1}" | grep -E '^Status' | awk '{print $3}'
+}
